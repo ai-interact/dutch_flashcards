@@ -408,12 +408,65 @@
     margin: 0 2px;
   }
 
+  /* SPEAK button (Dutch pronunciation) */
+  .speak-btn {
+    margin-top: 18px;
+    background: transparent;
+    border: 1.5px solid currentColor;
+    color: inherit;
+    width: 46px;
+    height: 46px;
+    border-radius: 50%;
+    font-size: 18px;
+    line-height: 1;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.15s ease, background 0.15s ease, color 0.15s ease, opacity 0.15s ease;
+    padding: 0;
+    opacity: 0.75;
+  }
+  .speak-btn:hover {
+    opacity: 1;
+    transform: scale(1.08);
+    background: var(--orange);
+    color: var(--paper);
+    border-color: var(--orange);
+  }
+  .speak-btn:active { transform: scale(0.94); }
+  .speak-btn.speaking {
+    background: var(--orange);
+    color: var(--paper);
+    border-color: var(--orange);
+    opacity: 1;
+    animation: speak-pulse 1.1s ease-in-out infinite;
+  }
+  @keyframes speak-pulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(217, 85, 31, 0.45); }
+    50%      { box-shadow: 0 0 0 8px rgba(217, 85, 31, 0); }
+  }
+  .speak-btn[hidden] { display: none; }
+  .face .hint { margin-top: 12px; }
+
+  .voice-hint {
+    display: block;
+    margin-top: 6px;
+    font-size: 9px;
+    color: var(--rust);
+    opacity: 0.8;
+    text-transform: none;
+    letter-spacing: 0.05em;
+  }
+  .voice-hint[hidden] { display: none; }
+
   @media (max-width: 600px) {
     body { padding: 16px 12px 60px; }
     .face { padding: 24px 18px; box-shadow: 5px 5px 0 var(--ink); }
     .nav-btn { padding: 10px 14px; font-size: 11px; }
     .counter .num { font-size: 22px; }
     h1 { font-size: 36px; }
+    .speak-btn { width: 40px; height: 40px; font-size: 16px; margin-top: 14px; }
   }
 </style>
 </head>
@@ -449,6 +502,7 @@
       <span class="corner tl" id="frontLang">NEDERLANDS</span>
       <span class="corner tr" id="frontIdx"></span>
       <div class="word" id="frontWord"></div>
+      <button class="speak-btn" id="frontSpeak" type="button" aria-label="Spreek Nederlands uit" title="Spreek uit (S)">🔊</button>
       <span class="hint">Tap to flip · <span class="kbd">space</span></span>
       <span class="corner bl">flashkaarten</span>
       <span class="corner br" id="frontLesson"></span>
@@ -457,6 +511,7 @@
       <span class="corner tl" id="backLang">ENGLISH</span>
       <span class="corner tr" id="backIdx"></span>
       <div class="word" id="backWord"></div>
+      <button class="speak-btn" id="backSpeak" type="button" aria-label="Spreek Nederlands uit" title="Spreek uit (S)">🔊</button>
       <span class="hint">Tap to flip back</span>
       <span class="corner bl">flashkaarten</span>
       <span class="corner br" id="backLesson"></span>
@@ -482,7 +537,8 @@
 </div>
 
 <footer>
-  Click card or press SPACE to flip · Arrow keys to navigate
+  Click card or press SPACE to flip · Arrow keys to navigate · Press <span class="kbd">S</span> to hear Dutch
+  <span class="voice-hint" id="voiceHint" hidden>No Dutch voice found on this device — speech will use the default voice.</span>
 </footer>
 
 </div>
@@ -511,6 +567,8 @@ const els = {
   backIdx: document.getElementById('backIdx'),
   frontLesson: document.getElementById('frontLesson'),
   backLesson: document.getElementById('backLesson'),
+  frontSpeak: document.getElementById('frontSpeak'),
+  backSpeak: document.getElementById('backSpeak'),
   prev: document.getElementById('prevBtn'),
   next: document.getElementById('nextBtn'),
   currentNum: document.getElementById('currentNum'),
@@ -519,7 +577,95 @@ const els = {
   flipMode: document.getElementById('flipModeBtn'),
   shuffle: document.getElementById('shuffleBtn'),
   reset: document.getElementById('resetBtn'),
+  voiceHint: document.getElementById('voiceHint'),
 };
+
+// ============================================================================
+// SPEECH (Dutch pronunciation via the browser's built-in Web Speech API).
+// No API keys, no network calls. Uses the OS's installed nl-NL voice.
+// ============================================================================
+const speech = {
+  supported: typeof window !== 'undefined' && 'speechSynthesis' in window,
+  voice: null,
+};
+
+// Strip grammar metadata so the synthesizer says the word naturally:
+//   "les (de)"               -> "les"
+//   "heet (heten)"           -> "heet"
+//   "komt … aan (aankomen)"  -> "komt aan"
+//   "heb last van (last hebben van)" -> "heb last van"
+function sanitizeForSpeech(text) {
+  if (!text) return '';
+  return String(text)
+    .replace(/\([^)]*\)/g, ' ')   // drop "(de)", "(het)", "(infinitive)" hints
+    .replace(/[…]+/g, ' ')        // separable-verb placeholder
+    .replace(/\.{2,}/g, ' ')      // ascii ellipsis variant
+    .replace(/\s+/g, ' ')         // collapse whitespace
+    .trim();
+}
+
+function pickDutchVoice() {
+  if (!speech.supported) return null;
+  const voices = window.speechSynthesis.getVoices() || [];
+  if (voices.length === 0) return null;
+  // Prefer nl-NL, then any Dutch variant, then null (will use default).
+  return voices.find(v => /^nl[-_]NL$/i.test(v.lang))
+      || voices.find(v => /^nl/i.test(v.lang))
+      || null;
+}
+
+function refreshVoice() {
+  if (!speech.supported) {
+    if (els.voiceHint) els.voiceHint.hidden = false;
+    return;
+  }
+  speech.voice = pickDutchVoice();
+  if (els.voiceHint) els.voiceHint.hidden = !!speech.voice;
+}
+
+function speakDutch(text) {
+  if (!speech.supported) return;
+  const clean = sanitizeForSpeech(text);
+  if (!clean) return;
+  try {
+    window.speechSynthesis.cancel(); // stop anything currently speaking
+    const u = new SpeechSynthesisUtterance(clean);
+    u.lang = 'nl-NL';
+    u.rate = 0.9;   // slightly slower for learners
+    u.pitch = 1;
+    if (speech.voice) u.voice = speech.voice;
+    // Pulse the relevant speaker button while audio plays.
+    const btn = currentDutchSpeakerBtn();
+    if (btn) {
+      btn.classList.add('speaking');
+      const clear = () => btn.classList.remove('speaking');
+      u.onend = clear;
+      u.onerror = clear;
+    }
+    window.speechSynthesis.speak(u);
+  } catch (e) {
+    // Fail silently — speech is a nice-to-have.
+  }
+}
+
+// Which side of the current card is showing Dutch right now?
+function dutchSideIsVisible() {
+  // The visible face is "front" when not flipped, "back" when flipped.
+  // showNLFirst=true => front is Dutch; false => back is Dutch.
+  const frontIsNL = state.showNLFirst;
+  const visibleIsFront = !state.flipped;
+  return frontIsNL === visibleIsFront;
+}
+
+function currentDutchSpeakerBtn() {
+  const dutchOnFront = state.showNLFirst;
+  return dutchOnFront ? els.frontSpeak : els.backSpeak;
+}
+
+function speakCurrentDutch() {
+  const card = state.cards[state.index];
+  if (card) speakDutch(card.nl);
+}
 
 function buildGrid() {
   els.grid.innerHTML = '';
@@ -574,6 +720,13 @@ function render() {
   els.backLesson.textContent = 'LES ' + state.lesson;
 
   els.card.classList.toggle('flipped', state.flipped);
+
+  // Speaker button: only show on the Dutch face.
+  if (els.frontSpeak && els.backSpeak) {
+    const dutchOnFront = state.showNLFirst;
+    els.frontSpeak.hidden = !dutchOnFront;
+    els.backSpeak.hidden = dutchOnFront;
+  }
 
   els.currentNum.textContent = state.index + 1;
   els.totalNum.textContent = state.cards.length;
@@ -636,7 +789,11 @@ function resetOrder() {
 }
 
 // Wire up
-els.card.addEventListener('click', flip);
+els.card.addEventListener('click', () => {
+  flip();
+  // After the flip, if the now-visible side is Dutch, speak it.
+  if (dutchSideIsVisible()) speakCurrentDutch();
+});
 els.prev.addEventListener('click', prev);
 els.next.addEventListener('click', next);
 els.shuffle.addEventListener('click', shuffle);
@@ -649,11 +806,36 @@ els.flipMode.addEventListener('click', () => {
   render();
 });
 
+// Speaker buttons: speak Dutch without flipping the card.
+function wireSpeakerBtn(btn) {
+  if (!btn) return;
+  btn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    speakCurrentDutch();
+  });
+}
+wireSpeakerBtn(els.frontSpeak);
+wireSpeakerBtn(els.backSpeak);
+
 document.addEventListener('keydown', (e) => {
   if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); flip(); }
   else if (e.key === 'ArrowRight') { e.preventDefault(); next(); }
   else if (e.key === 'ArrowLeft') { e.preventDefault(); prev(); }
+  else if (e.key === 's' || e.key === 'S') { e.preventDefault(); speakCurrentDutch(); }
 });
+
+// Prime the speech-synthesis voice list. Chrome populates voices lazily, so
+// we listen for the voiceschanged event in addition to the initial sync read.
+if (speech.supported) {
+  refreshVoice();
+  if (typeof window.speechSynthesis.addEventListener === 'function') {
+    window.speechSynthesis.addEventListener('voiceschanged', refreshVoice);
+  } else {
+    window.speechSynthesis.onvoiceschanged = refreshVoice;
+  }
+} else {
+  refreshVoice();
+}
 
 buildGrid();
 loadLesson(1);
