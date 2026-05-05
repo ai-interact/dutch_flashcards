@@ -789,11 +789,7 @@ function resetOrder() {
 }
 
 // Wire up
-els.card.addEventListener('click', () => {
-  flip();
-  // After the flip, if the now-visible side is Dutch, speak it.
-  if (dutchSideIsVisible()) speakCurrentDutch();
-});
+els.card.addEventListener('click', flip);
 els.prev.addEventListener('click', prev);
 els.next.addEventListener('click', next);
 els.shuffle.addEventListener('click', shuffle);
