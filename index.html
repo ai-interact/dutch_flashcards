@@ -1,0 +1,662 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nederlands Flashcards · NVA</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,700;9..144,900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --cream: #f4ede0;
+    --cream-deep: #ebe2cf;
+    --ink: #1a1816;
+    --orange: #d9551f;
+    --orange-deep: #b03e10;
+    --green: #2d5f3f;
+    --green-soft: #4a7a5c;
+    --rust: #8b4513;
+    --paper: #faf6ec;
+    --line: #1a1816;
+    --shadow: rgba(26, 24, 22, 0.12);
+  }
+  html, body {
+    height: 100%;
+    background: var(--cream);
+    color: var(--ink);
+    font-family: 'Fraunces', Georgia, serif;
+    overflow-x: hidden;
+  }
+  body {
+    background-image:
+      radial-gradient(circle at 20% 10%, rgba(217, 85, 31, 0.06) 0%, transparent 40%),
+      radial-gradient(circle at 80% 80%, rgba(45, 95, 63, 0.05) 0%, transparent 45%);
+    min-height: 100vh;
+    padding: 24px 16px 80px;
+  }
+  .wrap {
+    max-width: 920px;
+    margin: 0 auto;
+  }
+
+  /* HEADER */
+  header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    border-bottom: 2px solid var(--ink);
+    padding-bottom: 14px;
+    margin-bottom: 28px;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  .brand {
+    display: flex;
+    flex-direction: column;
+  }
+  .brand .top-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--rust);
+    margin-bottom: 6px;
+  }
+  .dot {
+    width: 7px; height: 7px;
+    background: var(--orange);
+    border-radius: 50%;
+  }
+  h1 {
+    font-family: 'Fraunces', serif;
+    font-weight: 900;
+    font-size: clamp(34px, 6vw, 54px);
+    line-height: 0.95;
+    letter-spacing: -0.025em;
+    font-style: italic;
+  }
+  h1 em {
+    font-style: normal;
+    color: var(--orange);
+  }
+  .subtitle {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: var(--green-soft);
+    text-align: right;
+  }
+  .subtitle strong {
+    display: block;
+    font-size: 22px;
+    color: var(--ink);
+    font-weight: 500;
+    letter-spacing: 0.02em;
+    text-transform: none;
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    margin-top: 2px;
+  }
+
+  /* LESSON SELECTOR */
+  .selector-shell {
+    background: var(--paper);
+    border: 1.5px solid var(--ink);
+    padding: 18px 18px 14px;
+    margin-bottom: 24px;
+    position: relative;
+  }
+  .selector-shell::before {
+    content: 'KIES JE LES';
+    position: absolute;
+    top: -10px; left: 16px;
+    background: var(--cream);
+    padding: 0 8px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    color: var(--rust);
+  }
+  .lesson-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(56px, 1fr));
+    gap: 6px;
+  }
+  .lesson-btn {
+    aspect-ratio: 1;
+    background: transparent;
+    border: 1.5px solid var(--ink);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--ink);
+    cursor: pointer;
+    transition: all 0.18s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+  }
+  .lesson-btn:hover {
+    background: var(--ink);
+    color: var(--cream);
+    transform: translate(-2px, -2px);
+    box-shadow: 4px 4px 0 var(--orange);
+  }
+  .lesson-btn.active {
+    background: var(--orange);
+    color: var(--paper);
+    border-color: var(--ink);
+    transform: translate(-2px, -2px);
+    box-shadow: 4px 4px 0 var(--ink);
+  }
+
+  /* CURRENT LESSON HEADER */
+  .lesson-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 18px;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  .lesson-info h2 {
+    font-family: 'Fraunces', serif;
+    font-weight: 700;
+    font-size: clamp(22px, 4vw, 32px);
+    font-style: italic;
+    letter-spacing: -0.02em;
+  }
+  .lesson-info .meta {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--rust);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  /* CARD STAGE */
+  .stage {
+    perspective: 1600px;
+    margin-bottom: 22px;
+  }
+  .card {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 5 / 3;
+    max-height: 360px;
+    transform-style: preserve-3d;
+    transition: transform 0.65s cubic-bezier(0.4, 0.1, 0.2, 1);
+    cursor: pointer;
+  }
+  .card.flipped { transform: rotateY(180deg); }
+  .card.no-transition { transition: none !important; }
+  .face {
+    position: absolute;
+    inset: 0;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    border: 2px solid var(--ink);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 32px 24px;
+    text-align: center;
+    box-shadow: 8px 8px 0 var(--ink);
+  }
+  .face .corner {
+    position: absolute;
+    top: 14px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+  }
+  .face .corner.tl { left: 16px; }
+  .face .corner.tr { right: 16px; }
+  .face .corner.br { right: 16px; bottom: 14px; top: auto; }
+  .face .corner.bl { left: 16px; bottom: 14px; top: auto; font-style: italic; font-family: 'Fraunces', serif; }
+  .face .word {
+    font-family: 'Fraunces', serif;
+    font-weight: 700;
+    line-height: 1.1;
+    letter-spacing: -0.025em;
+    font-size: clamp(34px, 7vw, 56px);
+    max-width: 100%;
+    word-wrap: break-word;
+    hyphens: auto;
+  }
+  .face .hint {
+    margin-top: 18px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--rust);
+    opacity: 0.7;
+  }
+
+  .face.front {
+    background: var(--paper);
+    color: var(--ink);
+  }
+  .face.front .corner { color: var(--orange-deep); }
+  .face.front::after {
+    content: '';
+    position: absolute;
+    inset: 8px;
+    border: 1px dashed var(--ink);
+    pointer-events: none;
+    opacity: 0.25;
+  }
+
+  .face.back {
+    background: var(--ink);
+    color: var(--paper);
+    transform: rotateY(180deg);
+  }
+  .face.back .corner { color: var(--orange); }
+  .face.back .word { color: var(--paper); }
+  .face.back .word em {
+    font-style: italic;
+    color: var(--orange);
+  }
+  .face.back::after {
+    content: '';
+    position: absolute;
+    inset: 8px;
+    border: 1px dashed var(--paper);
+    pointer-events: none;
+    opacity: 0.25;
+  }
+
+  /* CONTROLS */
+  .controls {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 18px;
+  }
+  .nav-btn {
+    flex: 0 0 auto;
+    background: var(--paper);
+    border: 1.5px solid var(--ink);
+    padding: 12px 22px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    cursor: pointer;
+    transition: all 0.16s ease;
+    color: var(--ink);
+    font-weight: 500;
+  }
+  .nav-btn:hover:not(:disabled) {
+    background: var(--ink);
+    color: var(--paper);
+    transform: translate(-2px, -2px);
+    box-shadow: 4px 4px 0 var(--orange);
+  }
+  .nav-btn:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+  }
+  .counter {
+    flex: 1;
+    text-align: center;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    color: var(--ink);
+    letter-spacing: 0.05em;
+  }
+  .counter .num {
+    font-size: 28px;
+    font-family: 'Fraunces', serif;
+    font-weight: 700;
+    font-style: italic;
+    color: var(--orange-deep);
+  }
+  .counter .slash { color: var(--rust); margin: 0 6px; }
+
+  /* PROGRESS */
+  .progress {
+    height: 4px;
+    background: var(--cream-deep);
+    border: 1px solid var(--ink);
+    margin-bottom: 22px;
+    position: relative;
+    overflow: hidden;
+  }
+  .progress-fill {
+    position: absolute;
+    inset: 0 auto 0 0;
+    background: var(--orange);
+    transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  /* OPTIONS */
+  .options {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    padding: 14px;
+    border: 1px dashed var(--ink);
+    background: rgba(250, 246, 236, 0.5);
+  }
+  .opt-btn {
+    background: transparent;
+    border: 1px solid var(--ink);
+    padding: 8px 14px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    cursor: pointer;
+    color: var(--ink);
+    transition: all 0.15s;
+  }
+  .opt-btn:hover {
+    background: var(--green);
+    color: var(--paper);
+    border-color: var(--green);
+  }
+  .opt-btn.toggle.on {
+    background: var(--green);
+    color: var(--paper);
+    border-color: var(--green);
+  }
+  .opt-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: var(--rust);
+  }
+
+  /* FOOTER */
+  footer {
+    margin-top: 36px;
+    padding-top: 16px;
+    border-top: 1px solid var(--ink);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--rust);
+    text-align: center;
+  }
+
+  /* keyboard hint */
+  .kbd {
+    display: inline-block;
+    padding: 2px 6px;
+    border: 1px solid var(--ink);
+    border-radius: 3px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    background: var(--cream);
+    margin: 0 2px;
+  }
+
+  @media (max-width: 600px) {
+    body { padding: 16px 12px 60px; }
+    .face { padding: 24px 18px; box-shadow: 5px 5px 0 var(--ink); }
+    .nav-btn { padding: 10px 14px; font-size: 11px; }
+    .counter .num { font-size: 22px; }
+    h1 { font-size: 36px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div class="brand">
+    <div class="top-row">
+      <span class="dot"></span>
+      <span>Nederlands voor anderstaligen</span>
+    </div>
+    <h1>Flash<em>kaarten</em></h1>
+  </div>
+  <div class="subtitle">
+    42 lessons · 2169 words
+    <strong>Boom · 2018</strong>
+  </div>
+</header>
+
+<div class="selector-shell">
+  <div class="lesson-grid" id="lessonGrid"></div>
+</div>
+
+<div class="lesson-info">
+  <h2 id="lessonTitle"></h2>
+  <div class="meta" id="lessonMeta"></div>
+</div>
+
+<div class="stage">
+  <div class="card" id="card">
+    <div class="face front">
+      <span class="corner tl" id="frontLang">NEDERLANDS</span>
+      <span class="corner tr" id="frontIdx"></span>
+      <div class="word" id="frontWord"></div>
+      <span class="hint">Tap to flip · <span class="kbd">space</span></span>
+      <span class="corner bl">flashkaarten</span>
+      <span class="corner br" id="frontLesson"></span>
+    </div>
+    <div class="face back">
+      <span class="corner tl" id="backLang">ENGLISH</span>
+      <span class="corner tr" id="backIdx"></span>
+      <div class="word" id="backWord"></div>
+      <span class="hint">Tap to flip back</span>
+      <span class="corner bl">flashkaarten</span>
+      <span class="corner br" id="backLesson"></span>
+    </div>
+  </div>
+</div>
+
+<div class="progress"><div class="progress-fill" id="progressFill"></div></div>
+
+<div class="controls">
+  <button class="nav-btn" id="prevBtn">← Vorige</button>
+  <div class="counter">
+    <span class="num" id="currentNum">1</span><span class="slash">/</span><span id="totalNum">0</span>
+  </div>
+  <button class="nav-btn" id="nextBtn">Volgende →</button>
+</div>
+
+<div class="options">
+  <span class="opt-label">Mode:</span>
+  <button class="opt-btn toggle" id="flipModeBtn">Show NL first</button>
+  <button class="opt-btn" id="shuffleBtn">⇄ Shuffle</button>
+  <button class="opt-btn" id="resetBtn">↺ Reset order</button>
+</div>
+
+<footer>
+  Click card or press SPACE to flip · Arrow keys to navigate
+</footer>
+
+</div>
+
+<script>
+const DATA = {"1": {"title": "Hoe heet je?", "words": [{"nl": "les (de)", "en": "lesson/class"}, {"nl": "hoe", "en": "how (what)"}, {"nl": "heet (heten)", "en": "are called"}, {"nl": "je", "en": "you"}, {"nl": "hallo", "en": "hi"}, {"nl": "ik", "en": "I"}, {"nl": "ben", "en": "am"}, {"nl": "mijn", "en": "my"}, {"nl": "naam (de)", "en": "name"}, {"nl": "is", "en": "is"}, {"nl": "de", "en": "the"}, {"nl": "docent (de)", "en": "teacher"}, {"nl": "wie", "en": "who"}, {"nl": "jij", "en": "you"}, {"nl": "wat", "en": "what"}, {"nl": "je", "en": "your"}, {"nl": "dag", "en": "hello"}, {"nl": "mevrouw (de)", "en": "madam"}, {"nl": "uit", "en": "from"}, {"nl": "welk", "en": "which"}, {"nl": "land (het)", "en": "country"}, {"nl": "kom (komen)", "en": "come"}, {"nl": "zegt (zeggen)", "en": "say"}, {"nl": "u", "en": "you"}, {"nl": "waar", "en": "where"}, {"nl": "vandaan", "en": "from"}, {"nl": "Frankrijk", "en": "France"}, {"nl": "en", "en": "and"}, {"nl": "meneer", "en": "sir"}, {"nl": "uw", "en": "your"}, {"nl": "komt (komen)", "en": "come"}, {"nl": "China", "en": "China"}, {"nl": "woont (wonen)", "en": "live"}, {"nl": "in", "en": "in"}, {"nl": "welke (welk)", "en": "which"}, {"nl": "stad (de)", "en": "city"}, {"nl": "woon (wonen)", "en": "live"}, {"nl": "nu", "en": "now"}, {"nl": "Den Haag", "en": "The Hague"}, {"nl": "straat (de)", "en": "street"}, {"nl": "het", "en": "the"}, {"nl": "centrum (het)", "en": "centre"}, {"nl": "op", "en": "at"}, {"nl": "nummer (het)", "en": "number"}, {"nl": "telefoonnummer (het)", "en": "telephone number"}, {"nl": "ook", "en": "also"}, {"nl": "nee", "en": "no"}, {"nl": "dichtbij", "en": "close to"}, {"nl": "haar", "en": "her"}, {"nl": "achternaam (de)", "en": "surname (family name)"}, {"nl": "zij", "en": "she"}, {"nl": "Nederland", "en": "the Netherlands"}, {"nl": "niet", "en": "not"}, {"nl": "hij", "en": "he"}]}, "2": {"title": "Uit welk land kom je?", "words": [{"nl": "voornaam (de)", "en": "first name"}, {"nl": "adres (het)", "en": "address"}, {"nl": "postcode (de)", "en": "postcode"}, {"nl": "plaats (de)", "en": "city"}, {"nl": "telefoon (de)", "en": "telephone"}, {"nl": "mobiel", "en": "mobile"}, {"nl": "werk (het)", "en": "work"}, {"nl": "Engeland", "en": "England"}, {"nl": "heb (hebben)", "en": "have"}, {"nl": "Engelse", "en": "English"}, {"nl": "Nederlandse (Nederlands)", "en": "Dutch"}, {"nl": "nationaliteit (de)", "en": "nationality"}, {"nl": "lang", "en": "long"}, {"nl": "hier", "en": "here"}, {"nl": "zes", "en": "six"}, {"nl": "jaar (de)", "en": "years"}, {"nl": "leeftijd (de)", "en": "age"}, {"nl": "wanneer", "en": "when"}, {"nl": "ben", "en": "are/am"}, {"nl": "geboren", "en": "born"}, {"nl": "maart", "en": "March"}, {"nl": "alleen", "en": "alone"}, {"nl": "bij", "en": "with"}, {"nl": "vrienden (de vriend)", "en": "friends"}, {"nl": "of", "en": "or"}, {"nl": "familie (de)", "en": "family"}, {"nl": "getrouwd (trouwen)", "en": "married"}, {"nl": "met", "en": "to"}, {"nl": "een", "en": "a"}, {"nl": "Nederlander (de)", "en": "Dutchman"}, {"nl": "zijn", "en": "his"}, {"nl": "we", "en": "we"}, {"nl": "wonen", "en": "live"}, {"nl": "jullie", "en": "you"}, {"nl": "huis (het)", "en": "house"}, {"nl": "buiten", "en": "outside"}, {"nl": "hebben", "en": "have"}, {"nl": "kinderen (het kind)", "en": "children"}, {"nl": "ja", "en": "yes"}, {"nl": "twee", "en": "two"}, {"nl": "jongen (de)", "en": "boy"}, {"nl": "van", "en": "of"}, {"nl": "drie", "en": "three"}, {"nl": "meisje (het)", "en": "girl"}, {"nl": "vijf", "en": "five"}, {"nl": "maanden (de maand)", "en": "months"}, {"nl": "ze", "en": "they"}, {"nl": "heten", "en": "are called"}, {"nl": "ze", "en": "she"}, {"nl": "man (de)", "en": "husband"}, {"nl": "zoon (de)", "en": "son"}, {"nl": "dochter (de)", "en": "daughter"}, {"nl": "hun", "en": "their"}, {"nl": "moeder (de)", "en": "mother"}, {"nl": "vader (de)", "en": "father"}, {"nl": "heeft (hebben)", "en": "has"}, {"nl": "geen", "en": "no"}]}, "3": {"title": "Welke dag is het vandaag?", "words": [{"nl": "dag (de)", "en": "day"}, {"nl": "het", "en": "it"}, {"nl": "vandaag", "en": "today"}, {"nl": "dinsdag (de)", "en": "Tuesday"}, {"nl": "gisteren", "en": "yesterday"}, {"nl": "was", "en": "was"}, {"nl": "maandag (de)", "en": "Monday"}, {"nl": "morgen", "en": "tomorrow"}, {"nl": "woensdag (de)", "en": "Wednesday"}, {"nl": "na", "en": "after"}, {"nl": "volgen", "en": "follow"}, {"nl": "donderdag (de)", "en": "Thursday"}, {"nl": "vrijdag (de)", "en": "Friday"}, {"nl": "laatste", "en": "last"}, {"nl": "dagen (de dag)", "en": "days"}, {"nl": "week (de)", "en": "week"}, {"nl": "zijn", "en": "are"}, {"nl": "zaterdag (de)", "en": "Saturday"}, {"nl": "zondag (de)", "en": "Sunday"}, {"nl": "dan", "en": "then"}, {"nl": "weekend (het)", "en": "weekend"}, {"nl": "werken", "en": "work"}, {"nl": "meeste", "en": "most"}, {"nl": "mensen", "en": "people"}, {"nl": "van", "en": "from"}, {"nl": "tot en met", "en": "through"}, {"nl": "vrij", "en": "free"}, {"nl": "meestal", "en": "usually"}, {"nl": "gaan", "en": "go"}, {"nl": "naar", "en": "to"}, {"nl": "tijd (de)", "en": "time"}, {"nl": "om", "en": "(in order) to"}, {"nl": "te", "en": "to"}, {"nl": "boodschappen", "en": "groceries"}, {"nl": "doen", "en": "do"}, {"nl": "andere (ander)", "en": "other"}, {"nl": "leuke (leuk)", "en": "fun"}, {"nl": "dingen (het ding)", "en": "things"}, {"nl": "bijvoorbeeld", "en": "for example"}, {"nl": "Nederlands", "en": "Dutch"}, {"nl": "leren", "en": "learn"}, {"nl": "winkels (de winkel)", "en": "shops"}, {"nl": "open", "en": "open"}, {"nl": "veel", "en": "many"}, {"nl": "maandagmorgen", "en": "Monday morning"}, {"nl": "dicht", "en": "closed"}, {"nl": "die", "en": "who"}, {"nl": "winkel (de)", "en": "shop"}, {"nl": "dus", "en": "therefore"}, {"nl": "scholen (de school)", "en": "schools"}, {"nl": "alle", "en": "all"}, {"nl": "twaalf", "en": "twelve"}, {"nl": "woensdagmiddag (de)", "en": "Wednesday afternoon"}, {"nl": "weken (de week)", "en": "weeks"}, {"nl": "zomer (de)", "en": "summer"}, {"nl": "dat", "en": "that"}]}, "4": {"title": "De Nederlandse les", "words": [{"nl": "talen (de taal)", "en": "languages"}, {"nl": "spreek (spreken)", "en": "speak"}, {"nl": "Engels", "en": "English"}, {"nl": "Frans", "en": "French"}, {"nl": "beetje", "en": "bit"}, {"nl": "maar", "en": "but"}, {"nl": "spreken", "en": "speak"}, {"nl": "waarom", "en": "why"}, {"nl": "leer (leren)", "en": "learn"}, {"nl": "doe (doen)", "en": "do"}, {"nl": "deze", "en": "this"}, {"nl": "cursus (de)", "en": "course"}, {"nl": "belangrijk", "en": "important"}, {"nl": "wil (willen)", "en": "want"}, {"nl": "studeren", "en": "study"}, {"nl": "moeilijke (moeilijk)", "en": "difficult"}, {"nl": "taal (de)", "en": "language"}, {"nl": "moeilijk", "en": "difficult"}, {"nl": "makkelijke (makkelijk)", "en": "easy"}, {"nl": "spreekt", "en": "speaks"}, {"nl": "langzaam", "en": "slowly"}, {"nl": "duidelijk", "en": "clearly"}, {"nl": "makkelijk", "en": "easy"}, {"nl": "al", "en": "already"}, {"nl": "goed", "en": "good"}, {"nl": "luister (luisteren)", "en": "listen"}, {"nl": "teksten (de tekst)", "en": "texts"}, {"nl": "groene (groen)", "en": "green"}, {"nl": "boek (het)", "en": "book"}, {"nl": "heb (hebben)", "en": "have"}, {"nl": "hoeveel", "en": "how many"}, {"nl": "keer (de)", "en": "times"}, {"nl": "per", "en": "per"}, {"nl": "vier", "en": "four"}, {"nl": "elke (elk)", "en": "every"}, {"nl": "behalve", "en": "except"}, {"nl": "rooster (het)", "en": "schedule"}, {"nl": "zit (zitten)", "en": "am"}, {"nl": "groep (de)", "en": "group"}, {"nl": "begint (beginnen)", "en": "begins"}, {"nl": "'s ochtends", "en": "in the morning"}, {"nl": "om", "en": "at"}, {"nl": "negen", "en": "nine"}, {"nl": "tot", "en": "until"}, {"nl": "uur (het)", "en": "hour (o'clock)"}, {"nl": "'s middags", "en": "in the afternoon"}, {"nl": "één", "en": "one"}, {"nl": "duurt (duren)", "en": "lasts"}, {"nl": "tien", "en": "ten"}, {"nl": "wij", "en": "we"}, {"nl": "lessen (de les)", "en": "classes"}, {"nl": "'s avonds", "en": "in the evening"}, {"nl": "voor", "en": "for"}, {"nl": "volgende", "en": "next"}, {"nl": "soms", "en": "sometimes"}, {"nl": "iedereen", "en": "everybody"}]}, "5": {"title": "Mijn dag", "words": [{"nl": "laat", "en": "late"}, {"nl": "wakker", "en": "awake"}, {"nl": "altijd", "en": "always"}, {"nl": "eet (eten)", "en": "eat"}, {"nl": "brood (het)", "en": "bread"}, {"nl": "drink (drinken)", "en": "drink"}, {"nl": "thee (de)", "en": "tea"}, {"nl": "zo", "en": "so"}, {"nl": "vroeg", "en": "early"}, {"nl": "moet (moeten)", "en": "must"}, {"nl": "half", "en": "half"}, {"nl": "lange (lang)", "en": "long"}, {"nl": "reis (de)", "en": "journey"}, {"nl": "daarom", "en": "therefore"}, {"nl": "ga (gaan)", "en": "go"}, {"nl": "met", "en": "by"}, {"nl": "fiets (de)", "en": "bicycle"}, {"nl": "reis (reizen)", "en": "travel"}, {"nl": "bus (de)", "en": "bus"}, {"nl": "kwart", "en": "quarter"}, {"nl": "voor", "en": "before"}, {"nl": "zeven", "en": "seven"}, {"nl": "station (het)", "en": "train station"}, {"nl": "komt … aan (aankomen)", "en": "arrives"}, {"nl": "acht", "en": "eight"}, {"nl": "officiële (officieel)", "en": "official"}, {"nl": "op tijd", "en": "on time"}, {"nl": "te", "en": "too"}, {"nl": "toen", "en": "then"}, {"nl": "trein (de)", "en": "train"}, {"nl": "gemist (missen)", "en": "missed"}, {"nl": "mis (missen)", "en": "miss"}, {"nl": "hem", "en": "it"}, {"nl": "want", "en": "because"}, {"nl": "vertrekt (vertrekken)", "en": "leaves"}, {"nl": "kwartier (het)", "en": "quarter of an hour"}, {"nl": "vijftien", "en": "fifteen"}, {"nl": "minuten (de minuut)", "en": "minutes"}, {"nl": "die", "en": "that"}, {"nl": "lees (lezen)", "en": "read"}, {"nl": "krant (de)", "en": "newspaper"}, {"nl": "werk", "en": "work"}, {"nl": "weer", "en": "again"}, {"nl": "verschilt (verschillen)", "en": "differs"}, {"nl": "werkte (werken)", "en": "worked"}, {"nl": "over", "en": "past"}, {"nl": "thuis", "en": "home"}, {"nl": "eten", "en": "eat"}, {"nl": "kijk (kijken)", "en": "watch"}, {"nl": "televisie (de)", "en": "television"}, {"nl": "daarna", "en": "after that"}, {"nl": "huiswerk (het)", "en": "homework"}, {"nl": "stop", "en": "stop"}, {"nl": "bijna", "en": "almost"}, {"nl": "afgelopen", "en": "over"}, {"nl": "druk", "en": "busy"}]}, "6": {"title": "Boodschappen doen", "words": [{"nl": "doe (doen)", "en": "do"}, {"nl": "supermarkt (de)", "en": "supermarket"}, {"nl": "koop (kopen)", "en": "buy"}, {"nl": "alles", "en": "everything"}, {"nl": "hele (heel)", "en": "whole"}, {"nl": "heb … nodig (nodig hebben)", "en": "need"}, {"nl": "maak (maken)", "en": "make"}, {"nl": "lijstje (het)", "en": "list"}, {"nl": "daar", "en": "(on) it"}, {"nl": "staat (staan)", "en": "is"}, {"nl": "melk (de)", "en": "milk"}, {"nl": "aardappelen", "en": "potatoes"}, {"nl": "fruit (het)", "en": "fruit"}, {"nl": "weet (weten)", "en": "know"}, {"nl": "iets", "en": "something"}, {"nl": "o", "en": "oh"}, {"nl": "zie (zien)", "en": "see"}, {"nl": "iemand", "en": "someone"}, {"nl": "kan (kunnen)", "en": "can"}, {"nl": "helpen", "en": "help"}, {"nl": "mag (mogen)", "en": "may"}, {"nl": "wat", "en": "something"}, {"nl": "vragen", "en": "ask"}, {"nl": "nergens", "en": "nowhere"}, {"nl": "vind (vinden)", "en": "find"}, {"nl": "links", "en": "left"}, {"nl": "rechts", "en": "right"}, {"nl": "loop (lopen)", "en": "walk"}, {"nl": "wel", "en": "just"}, {"nl": "even", "en": "for a moment"}, {"nl": "loop … mee (meelopen)", "en": "walk along"}, {"nl": "geloof (geloven)", "en": "believe"}, {"nl": "dat", "en": "that"}, {"nl": "koffie (de)", "en": "coffee"}, {"nl": "meer", "en": "anymore"}, {"nl": "halen", "en": "get (buy)"}, {"nl": "betalen", "en": "pay"}, {"nl": "pak (het)", "en": "bag"}, {"nl": "gratis", "en": "free"}, {"nl": "als", "en": "when"}, {"nl": "kassa (de)", "en": "checkout counter"}, {"nl": "aan", "en": "at"}, {"nl": "goedemiddag", "en": "good afternoon"}, {"nl": "tot ziens", "en": "goodbye"}, {"nl": "fijn", "en": "nice"}, {"nl": "gesprek (het)", "en": "conversation"}, {"nl": "markt (de)", "en": "market"}, {"nl": "groente (de)", "en": "vegetables"}, {"nl": "kopen", "en": "buy"}, {"nl": "verschil (het)", "en": "difference"}, {"nl": "tussen", "en": "between"}, {"nl": "producten (het product)", "en": "products"}, {"nl": "goedkoop", "en": "cheap"}, {"nl": "goedkoper", "en": "cheaper"}, {"nl": "dan", "en": "than"}]}, "7": {"title": "Stap voor stap leren", "words": [{"nl": "stap voor stap", "en": "step-by-step"}, {"nl": "werkt (werken)", "en": "works"}, {"nl": "Delftse", "en": "Delft"}, {"nl": "methode (de)", "en": "method"}, {"nl": "uit je hoofd", "en": "from memory (by heart)"}, {"nl": "hoofd (het)", "en": "head"}, {"nl": "tekst (de)", "en": "text"}, {"nl": "verstaan", "en": "hear"}, {"nl": "begrijpen", "en": "understand"}, {"nl": "zonder", "en": "without"}, {"nl": "hulp (de)", "en": "help"}, {"nl": "kost (kosten)", "en": "costs"}, {"nl": "stappen (de stap)", "en": "steps"}, {"nl": "online", "en": "online"}, {"nl": "menu (het)", "en": "menu"}, {"nl": "begint (beginnen)", "en": "begin"}, {"nl": "kijkt (kijken)", "en": "look"}, {"nl": "luistert (luisteren)", "en": "listen"}, {"nl": "zin (de)", "en": "sentence"}, {"nl": "eind (het)", "en": "end"}, {"nl": "pauze (de)", "en": "pause"}, {"nl": "woorden (het woord)", "en": "words"}, {"nl": "zoek … op (opzoeken)", "en": "look up"}, {"nl": "wat", "en": "what"}, {"nl": "betekenen", "en": "mean"}, {"nl": "begrijpt (begrijpen)", "en": "understand"}, {"nl": "snel", "en": "fast"}, {"nl": "versta (verstaan)", "en": "hear"}, {"nl": "paar", "en": "couple"}, {"nl": "uitspraak (de)", "en": "pronunciation"}, {"nl": "zo", "en": "that way"}, {"nl": "luisteren", "en": "listen"}, {"nl": "lezen", "en": "read"}, {"nl": "nazeggen", "en": "repeat out loud"}, {"nl": "kunt (kunnen)", "en": "can"}, {"nl": "opzoeken", "en": "look up"}, {"nl": "begrijp (begrijpen)", "en": "understand"}, {"nl": "eerst", "en": "first"}, {"nl": "oefen (oefenen)", "en": "practice"}, {"nl": "krijg (krijgen)", "en": "get"}, {"nl": "antwoord (het)", "en": "answer"}, {"nl": "vraag (de)", "en": "question"}, {"nl": "ken (kennen)", "en": "know"}, {"nl": "toets (de)", "en": "test"}, {"nl": "luistertoets (de)", "en": "listening test"}, {"nl": "resultaat (het)", "en": "result"}, {"nl": "meer", "en": "more"}, {"nl": "gaten (het gat)", "en": "gaps"}, {"nl": "controle (de)", "en": "check"}, {"nl": "hardop", "en": "aloud"}, {"nl": "schrijf (schrijven)", "en": "write"}, {"nl": "later", "en": "later"}, {"nl": "herhalen", "en": "repeat"}, {"nl": "oefening (de)", "en": "exercise"}, {"nl": "alleen", "en": "only"}, {"nl": "kent (kennen)", "en": "know"}, {"nl": "nog", "en": "also"}, {"nl": "vragen (de vraag)", "en": "questions"}, {"nl": "praten", "en": "talk"}]}, "8": {"title": "Eet smakelijk!", "words": [{"nl": "eet smakelijk", "en": "tasty"}, {"nl": "maaltijd (de)", "en": "meal"}, {"nl": "anders", "en": "different"}, {"nl": "zeker", "en": "definitely"}, {"nl": "vroeger", "en": "in the past"}, {"nl": "omdat", "en": "because"}, {"nl": "ongeveer", "en": "more or less"}, {"nl": "hetzelfde", "en": "the same"}, {"nl": "at (eten)", "en": "ate"}, {"nl": "wereld (de)", "en": "world"}, {"nl": "aantal (het)", "en": "number"}, {"nl": "maaltijden (de maaltijd)", "en": "meals"}, {"nl": "eerste", "en": "first"}, {"nl": "ontbijt (het)", "en": "breakfast"}, {"nl": "Nederlanders (de Nederlander)", "en": "Dutch people"}, {"nl": "kaas (de)", "en": "cheese"}, {"nl": "drinken", "en": "drink"}, {"nl": "vriend (de)", "en": "(boy)friend"}, {"nl": "neemt (nemen)", "en": "has/takes"}, {"nl": "kop (de)", "en": "cup"}, {"nl": "zwarte (zwart)", "en": "black"}, {"nl": "gezond", "en": "healthy"}, {"nl": "krijgt (krijgen)", "en": "gets"}, {"nl": "genoeg", "en": "enough"}, {"nl": "energie (de)", "en": "energy"}, {"nl": "denk (denken)", "en": "think"}, {"nl": "tweede", "en": "second"}, {"nl": "vlees (het)", "en": "meat"}, {"nl": "vaak", "en": "often"}, {"nl": "daarbij", "en": "with it"}, {"nl": "warms (warm)", "en": "warm"}, {"nl": "soep (de)", "en": "soup"}, {"nl": "er", "en": "there"}, {"nl": "eten (het)", "en": "food (meals)"}, {"nl": "weinig", "en": "little"}, {"nl": "derde", "en": "third"}, {"nl": "belangrijkste", "en": "most important"}, {"nl": "ons", "en": "us"}, {"nl": "avondeten (het)", "en": "evening meal"}, {"nl": "warme (warm)", "en": "warm"}, {"nl": "aten (eten)", "en": "ate"}, {"nl": "vooral", "en": "mostly"}, {"nl": "vis (de)", "en": "fish"}, {"nl": "kip (de)", "en": "chicken"}, {"nl": "pasta (de)", "en": "pasta"}, {"nl": "rijst (de)", "en": "rice"}, {"nl": "daar…bij", "en": "with it"}, {"nl": "water (het)", "en": "water"}, {"nl": "maar", "en": "only"}, {"nl": "verbaast (verbazen)", "en": "surprises"}, {"nl": "me", "en": "me"}, {"nl": "misschien", "en": "perhaps"}, {"nl": "typisch", "en": "typically"}, {"nl": "vertel (vertellen)", "en": "tell"}, {"nl": "eens", "en": "just"}, {"nl": "vind (vinden)", "en": "find"}, {"nl": "lekker", "en": "tasty"}]}, "9": {"title": "Hoe kom je naar de les?", "words": [{"nl": "gekomen (komen)", "en": "come"}, {"nl": "uitgestapt (uitstappen)", "en": "got off"}, {"nl": "lopend", "en": "walking"}, {"nl": "school (de)", "en": "school"}, {"nl": "gegaan (gaan)", "en": "gone"}, {"nl": "duurde (duren)", "en": "lasted"}, {"nl": "erover gedaan (erover doen)", "en": "did it take"}, {"nl": "gedaan (doen)", "en": "took"}, {"nl": "sneller", "en": "faster"}, {"nl": "bovendien", "en": "besides that"}, {"nl": "zitten", "en": "sit"}, {"nl": "vertraging", "en": "delay"}, {"nl": "vervelend", "en": "annoying"}, {"nl": "nou", "en": "well"}, {"nl": "regent (regenen)", "en": "rains"}, {"nl": "regen (de)", "en": "rain"}, {"nl": "fietst (fietsen)", "en": "ride your bike"}, {"nl": "word (worden)", "en": "get"}, {"nl": "nat", "en": "wet"}, {"nl": "nadeel (het)", "en": "disadvantage"}, {"nl": "neem (nemen)", "en": "take"}, {"nl": "liever", "en": "rather"}, {"nl": "auto (de)", "en": "car"}, {"nl": "kleine (klein)", "en": "little"}, {"nl": "witte (wit)", "en": "white"}, {"nl": "mij", "en": "my (place)"}, {"nl": "buurt (de)", "en": "neighbourhood"}, {"nl": "overal", "en": "everywhere"}, {"nl": "naartoe", "en": "go"}, {"nl": "hoef (hoeven) te", "en": "need"}, {"nl": "nooit", "en": "never"}, {"nl": "wachten", "en": "wait"}, {"nl": "file (de)", "en": "traffic jam"}, {"nl": "waar", "en": "true"}, {"nl": "ruimte (de)", "en": "space"}, {"nl": "er … in", "en": "… that/there"}, {"nl": "bent (zijn)", "en": "are"}, {"nl": "radio (de)", "en": "radio"}, {"nl": "wel", "en": "certainly"}, {"nl": "voordeel (het)", "en": "advantage"}, {"nl": "bezig", "en": "going on"}, {"nl": "binnen", "en": "inside"}, {"nl": "goedemorgen", "en": "good morning"}, {"nl": "ver", "en": "far"}, {"nl": "weg", "en": "away"}, {"nl": "binnen", "en": "within"}, {"nl": "vanochtend", "en": "this morning"}, {"nl": "kapot", "en": "broken"}, {"nl": "moest (moeten)", "en": "had to"}, {"nl": "lopen", "en": "walk"}, {"nl": "langer", "en": "longer"}, {"nl": "brug (de)", "en": "bridge"}, {"nl": "sommige", "en": "some"}, {"nl": "geluk (het)", "en": "luck"}]}, "10": {"title": "De vier seizoenen", "words": [{"nl": "seizoenen (het seizoen)", "en": "seasons"}, {"nl": "vakantie (de)", "en": "holiday"}, {"nl": "willen", "en": "want"}, {"nl": "weten", "en": "know"}, {"nl": "gebeurt (gebeuren)", "en": "happens"}, {"nl": "verdelen (verdelen)", "en": "divide"}, {"nl": "jaren (het jaar)", "en": "years"}, {"nl": "uren (het uur)", "en": "hours"}, {"nl": "seconden (de seconde)", "en": "seconds"}, {"nl": "maand (de maand)", "en": "month"}, {"nl": "weer (het weer)", "en": "weather"}, {"nl": "seizoen (het seizoen)", "en": "season"}, {"nl": "warm", "en": "warm"}, {"nl": "tenminste", "en": "at least"}, {"nl": "zeggen", "en": "say"}, {"nl": "graden (de graad)", "en": "degrees"}, {"nl": "vinden", "en": "find"}, {"nl": "schijnt (schijnen)", "en": "shines"}, {"nl": "zon (de)", "en": "sun"}, {"nl": "erg", "en": "very"}, {"nl": "juli", "en": "July"}, {"nl": "augustus", "en": "August"}, {"nl": "september", "en": "September"}, {"nl": "herfst (de)", "en": "autumn"}, {"nl": "oktober", "en": "October"}, {"nl": "november", "en": "November"}, {"nl": "wordt (worden)", "en": "is getting"}, {"nl": "koud", "en": "cold"}, {"nl": "korter", "en": "shorter"}, {"nl": "donker", "en": "dark"}, {"nl": "waait (waaien)", "en": "(wind) is blowing"}, {"nl": "gele (geel)", "en": "yellow"}, {"nl": "bladeren (het blad)", "en": "leaves"}, {"nl": "vallen", "en": "fall"}, {"nl": "bomen (de boom)", "en": "trees"}, {"nl": "december", "en": "December"}, {"nl": "winter (de)", "en": "winter"}, {"nl": "nog", "en": "even"}, {"nl": "kouder", "en": "colder"}, {"nl": "lente (de)", "en": "spring"}, {"nl": "komen", "en": "come (grow)"}, {"nl": "zien", "en": "see"}, {"nl": "bloemen (de bloem)", "en": "flowers"}, {"nl": "warmer", "en": "warmer"}, {"nl": "temperatuur (de)", "en": "temperature"}, {"nl": "stijgt (stijgen)", "en": "rises"}, {"nl": "steeds", "en": "increasingly"}, {"nl": "mooi", "en": "beautiful"}, {"nl": "heerlijk", "en": "lovely"}, {"nl": "klimaat (het)", "en": "climate"}, {"nl": "hebt", "en": "have"}, {"nl": "wind (de)", "en": "wind"}, {"nl": "verandert (veranderen)", "en": "changes"}, {"nl": "beste", "en": "best"}, {"nl": "plekje (het)", "en": "place"}]}, "11": {"title": "Hoe wonen jullie?", "words": [{"nl": "eigenlijk", "en": "actually"}, {"nl": "eigen", "en": "own"}, {"nl": "huren", "en": "rent"}, {"nl": "woning (de)", "en": "house"}, {"nl": "op kamers", "en": "in lodgings"}, {"nl": "kamer (de)", "en": "room"}, {"nl": "iemand anders", "en": "someone else"}, {"nl": "huisgenoot (de)", "en": "roommate"}, {"nl": "woonde (wonen)", "en": "lived"}, {"nl": "samen", "en": "together"}, {"nl": "huisgenoten (de huisgenoot)", "en": "housemates"}, {"nl": "allemaal", "en": "all of them"}, {"nl": "mannen (de man)", "en": "men"}, {"nl": "onze (ons)", "en": "our"}, {"nl": "kamers (de)", "en": "rooms"}, {"nl": "badkamer (de)", "en": "bathroom"}, {"nl": "wc (de)", "en": "WC/toilet"}, {"nl": "keuken (de)", "en": "kitchen"}, {"nl": "beneden", "en": "downstairs"}, {"nl": "gebruiken", "en": "use"}, {"nl": "contact (het)", "en": "contact"}, {"nl": "het zijn", "en": "they are"}, {"nl": "studenten (de student)", "en": "students"}, {"nl": "aardig", "en": "nice"}, {"nl": "hen", "en": "them"}, {"nl": "af en toe", "en": "once in a while"}, {"nl": "groot", "en": "big"}, {"nl": "ruim", "en": "spacious"}, {"nl": "vierkante (vierkant)", "en": "square"}, {"nl": "meter (de)", "en": "metres"}, {"nl": "er", "en": "there"}, {"nl": "slaap (slapen)", "en": "sleep"}, {"nl": "woonkamer (de)", "en": "living room"}, {"nl": "slaapkamer (de)", "en": "bedroom"}, {"nl": "er … in", "en": "(in) it"}, {"nl": "zitten", "en": "are, sit"}, {"nl": "ramen (het raam)", "en": "windows"}, {"nl": "toch", "en": "nevertheless"}, {"nl": "tevreden", "en": "satisfied"}, {"nl": "dure (duur)", "en": "expensive"}, {"nl": "betaal (betalen)", "en": "pay"}, {"nl": "ervoor", "en": "for it"}, {"nl": "noemt (noemen)", "en": "call"}, {"nl": "duur", "en": "expensive"}, {"nl": "euro (de)", "en": "euros"}, {"nl": "inclusief", "en": "including"}, {"nl": "internet (het)", "en": "Internet"}, {"nl": "zelf", "en": "personally"}, {"nl": "redelijke (redelijk)", "en": "reasonable"}, {"nl": "huur (de)", "en": "rent"}, {"nl": "aan … gekomen (komen aan)", "en": "find"}, {"nl": "via", "en": "through"}, {"nl": "nog", "en": "still"}, {"nl": "vriend (de)", "en": "boyfriend"}, {"nl": "binnenkort", "en": "soon"}, {"nl": "samenwonen", "en": "live together"}, {"nl": "flat (de)", "en": "flat"}, {"nl": "zoeken", "en": "are looking for"}, {"nl": "het liefst", "en": "preferably"}]}, "12": {"title": "Hoe kom ik daar?", "words": [{"nl": "zeg (zeggen)", "en": "hey/say"}, {"nl": "zin om", "en": "like to"}, {"nl": "een uur of zes", "en": "around six o'clock"}, {"nl": "anderen", "en": "other people"}, {"nl": "leuk", "en": "great"}, {"nl": "graag", "en": "gladly"}, {"nl": "heel", "en": "very"}, {"nl": "zal (zullen)", "en": "shall"}, {"nl": "uitleggen", "en": "explain"}, {"nl": "nodig", "en": "necessary"}, {"nl": "wijst (wijzen)", "en": "shows"}, {"nl": "weg (de)", "en": "way"}, {"nl": "trouwens", "en": "actually"}, {"nl": "om", "en": "around"}, {"nl": "hoek (de)", "en": "corner"}, {"nl": "kunnen", "en": "can"}, {"nl": "met z'n tweeën", "en": "the two of us"}, {"nl": "oké", "en": "okay"}, {"nl": "meenemen", "en": "bring"}, {"nl": "hoor", "en": "you know"}, {"nl": "hoeft (hoeven)", "en": "is necessary"}, {"nl": "op weg", "en": "on the way"}, {"nl": "allebei", "en": "both"}, {"nl": "gekocht (kopen)", "en": "bought"}, {"nl": "uit mijn hoofd", "en": "from memory"}, {"nl": "moeten", "en": "have to"}, {"nl": "straten (de straat)", "en": "streets"}, {"nl": "vraagt (vragen)", "en": "asks"}, {"nl": "rechtsaf", "en": "to the right"}, {"nl": "vergeten", "en": "forgotten"}, {"nl": "pakt (pakken)", "en": "gets"}, {"nl": "linksaf", "en": "to the left"}, {"nl": "rechtdoor", "en": "straight ahead"}, {"nl": "brede (breed)", "en": "wide"}, {"nl": "weg (de)", "en": "road"}, {"nl": "oversteken", "en": "cross"}, {"nl": "verder", "en": "further"}, {"nl": "dezelfde", "en": "the same"}, {"nl": "richting (de)", "en": "direction"}, {"nl": "steken … over (oversteken)", "en": "cross"}, {"nl": "drukke (druk)", "en": "busy"}, {"nl": "plein (het)", "en": "square"}, {"nl": "kerk (de)", "en": "church"}, {"nl": "linkerkant (de)", "en": "left hand side"}, {"nl": "hoge (hoog)", "en": "high"}, {"nl": "gebouw (het)", "en": "building"}, {"nl": "verdieping (de)", "en": "floor"}, {"nl": "nemen", "en": "take"}, {"nl": "lift (de)", "en": "elevator"}, {"nl": "trappen (de trap)", "en": "stairs"}, {"nl": "boven", "en": "upstairs"}, {"nl": "deur (de)", "en": "door"}]}, "13": {"title": "Een leuk weekend", "words": [{"nl": "hoi", "en": "hi"}, {"nl": "gaat (gaan)", "en": "is going"}, {"nl": "jou", "en": "you"}, {"nl": "gehad (hebben)", "en": "had"}, {"nl": "op bezoek", "en": "visiting"}, {"nl": "geweest (zijn)", "en": "been"}, {"nl": "wilden (willen)", "en": "wanted"}, {"nl": "nieuw", "en": "new"}, {"nl": "iets nieuws", "en": "something new"}, {"nl": "zondagmiddag (de)", "en": "Sunday afternoon"}, {"nl": "museum (het)", "en": "museum"}, {"nl": "beelden (het beeld)", "en": "sculptures"}, {"nl": "zee (de)", "en": "sea"}, {"nl": "prachtig", "en": "beautiful"}, {"nl": "rij (de)", "en": "line"}, {"nl": "waren (zijn)", "en": "were"}, {"nl": "klinkt (klinken)", "en": "sounds"}, {"nl": "gegeten (eten)", "en": "eaten"}, {"nl": "Spaanse (Spaans)", "en": "Spanish"}, {"nl": "gekookt (koken)", "en": "cooked"}, {"nl": "film (de)", "en": "movie"}, {"nl": "gekeken (kijken)", "en": "watched"}, {"nl": "gezellig", "en": "pleasant"}, {"nl": "hadden (hebben)", "en": "had"}, {"nl": "interessant", "en": "interesting"}, {"nl": "over", "en": "about"}, {"nl": "verschillen (het verschil)", "en": "differences"}, {"nl": "Franse (Frans)", "en": "French"}, {"nl": "cultuur (de)", "en": "culture"}, {"nl": "gelachen (lachen)", "en": "laughed"}, {"nl": "niets", "en": "nothing"}, {"nl": "bijzonders", "en": "special"}, {"nl": "slaap … uit (uitslapen)", "en": "sleep in"}, {"nl": "ruim … op (opruimen)", "en": "tidy up"}, {"nl": "maak … schoon (schoonmaken)", "en": "clean"}, {"nl": "schoon", "en": "clean"}, {"nl": "elf", "en": "eleven"}, {"nl": "uitgeslapen (uitslapen)", "en": "slept in"}, {"nl": "vriendin (de)", "en": "girlfriend"}, {"nl": "mails (de mail)", "en": "emails"}, {"nl": "gestuurd (sturen)", "en": "sent"}, {"nl": "m'n", "en": "my"}, {"nl": "ouders", "en": "parents"}, {"nl": "gebeld (bellen)", "en": "called"}, {"nl": "sliepen (slapen)", "en": "slept"}, {"nl": "dom", "en": "stupid"}, {"nl": "vergeet (vergeten)", "en": "forget"}, {"nl": "natuurlijk", "en": "of course"}, {"nl": "geleerd (leren)", "en": "studied"}, {"nl": "had (hebben)", "en": "had"}, {"nl": "gesproken (spreken)", "en": "spoken"}, {"nl": "collega (de)", "en": "colleague"}, {"nl": "gepraat (praten)", "en": "talked"}, {"nl": "stelde (stellen)", "en": "posed"}, {"nl": "zei (zeggen)", "en": "said"}, {"nl": "tjonge", "en": "wow"}, {"nl": "wat", "en": "what"}]}, "14": {"title": "Familie", "words": [{"nl": "gezin (het)", "en": "family"}, {"nl": "broers (de broer)", "en": "brothers"}, {"nl": "zussen (de zus)", "en": "sisters"}, {"nl": "normaal", "en": "normal"}, {"nl": "kind (het)", "en": "child"}, {"nl": "meen (menen)", "en": "mean"}, {"nl": "niemand", "en": "no one"}, {"nl": "spelen", "en": "play"}, {"nl": "gezinnen (het gezin)", "en": "families"}, {"nl": "groter", "en": "bigger"}, {"nl": "ooms (de oom)", "en": "uncles"}, {"nl": "tantes (de tante)", "en": "aunts"}, {"nl": "neven (de neef)", "en": "male cousins/nephews"}, {"nl": "nichten (de nicht)", "en": "female cousins/nieces"}, {"nl": "mist (missen)", "en": "miss"}, {"nl": "bellen", "en": "call"}, {"nl": "gelukkig", "en": "luckily"}, {"nl": "schoonfamilie", "en": "in-laws"}, {"nl": "zoals", "en": "as"}, {"nl": "schoonouders", "en": "parents-in-law"}, {"nl": "foto's (de foto)", "en": "photos"}, {"nl": "dit", "en": "this"}, {"nl": "jongste", "en": "youngest"}, {"nl": "zus (de zus)", "en": "sister"}, {"nl": "oudste", "en": "eldest"}, {"nl": "bank (de)", "en": "couch"}, {"nl": "echt", "en": "really"}, {"nl": "zien er … uit (er uitzien)", "en": "look"}, {"nl": "jong", "en": "young"}, {"nl": "wat voor", "en": "what kind of"}, {"nl": "baas (de)", "en": "boss"}, {"nl": "bedrijf (het)", "en": "company"}, {"nl": "arts (de)", "en": "doctor"}, {"nl": "toevallig", "en": "a coincidence"}, {"nl": "gescheiden (scheiden)", "en": "divorced"}, {"nl": "toen", "en": "when"}, {"nl": "klein", "en": "little"}, {"nl": "oma (de)", "en": "grandma"}, {"nl": "paste … op (oppassen)", "en": "babysat"}, {"nl": "houd van (houden van)", "en": "love"}, {"nl": "naar … toe", "en": "to"}, {"nl": "elkaar", "en": "each other"}, {"nl": "feestdagen (de feestdag)", "en": "public holidays"}, {"nl": "verjaardagen (de verjaardag)", "en": "birthdays"}, {"nl": "leven", "en": "live"}, {"nl": "jouw", "en": "your"}, {"nl": "opa's (de opa)", "en": "grandfathers"}, {"nl": "oma's (de oma)", "en": "grandmothers"}, {"nl": "gestorven (sterven)", "en": "died"}, {"nl": "helaas", "en": "unfortunately"}, {"nl": "gekend (kennen)", "en": "known"}, {"nl": "gehoord (horen)", "en": "heard"}]}, "15": {"title": "Pakje bij de buren", "words": [{"nl": "pakje (het pakje)", "en": "package"}, {"nl": "buren", "en": "neighbours"}, {"nl": "buurman (de)", "en": "male neighbour"}, {"nl": "vond (vinden)", "en": "found"}, {"nl": "briefje (het briefje)", "en": "note"}, {"nl": "er … op", "en": "on it"}, {"nl": "staat (staan)", "en": "is written"}, {"nl": "gebracht (brengen)", "en": "delivered"}, {"nl": "klopt (kloppen)", "en": "is correct"}, {"nl": "inderdaad", "en": "indeed"}, {"nl": "ligt (liggen)", "en": "is"}, {"nl": "alsjeblieft", "en": "here you go"}, {"nl": "dank u wel", "en": "thank you"}, {"nl": "nieuwe (nieuw)", "en": "new"}, {"nl": "kleren", "en": "clothes"}, {"nl": "aangekomen (aankomen)", "en": "arrived"}, {"nl": "kun (kunnen)", "en": "can"}, {"nl": "toch", "en": "isn't it?"}, {"nl": "passen", "en": "try on"}, {"nl": "jawel", "en": "yes, certainly"}, {"nl": "stuur (sturen)", "en": "send"}, {"nl": "gewoon", "en": "simply"}, {"nl": "terug", "en": "back"}, {"nl": "winkelen", "en": "shop"}, {"nl": "dalen", "en": "drop"}, {"nl": "prijzen (de prijs)", "en": "prices"}, {"nl": "goede (goed)", "en": "good"}, {"nl": "kans (de)", "en": "chance"}, {"nl": "prijs (de)", "en": "price"}, {"nl": "zakt (zakken)", "en": "drops"}, {"nl": "dubbel", "en": "double"}, {"nl": "wist (weten)", "en": "knew"}, {"nl": "kwaliteit (de)", "en": "quality"}, {"nl": "wachten op", "en": "wait for"}, {"nl": "beurt (de)", "en": "turn"}, {"nl": "verse (vers)", "en": "fresh"}, {"nl": "erbij", "en": "(with) it"}, {"nl": "zelfs", "en": "even"}, {"nl": "recept", "en": "recipe"}, {"nl": "er … bij", "en": "with (it)"}, {"nl": "koken", "en": "cook"}, {"nl": "dacht (denken)", "en": "thought"}, {"nl": "pizza's (de pizza)", "en": "pizzas"}, {"nl": "valt … mee (meevallen)", "en": "better than expected"}, {"nl": "zin in", "en": "(feel) like"}, {"nl": "vanavond", "en": "tonight"}, {"nl": "sporten", "en": "do sports"}, {"nl": "tja", "en": "well"}, {"nl": "afgesproken (afspreken)", "en": "that's a deal"}, {"nl": "bedankt", "en": "thanks"}, {"nl": "probleem (het)", "en": "problem"}, {"nl": "succes (het)", "en": "good luck"}]}, "16": {"title": "School", "words": [{"nl": "basisschool (de)", "en": "primary school"}, {"nl": "zitten op", "en": "go to"}, {"nl": "pas", "en": "only"}, {"nl": "vanaf", "en": "from"}, {"nl": "beginnen", "en": "start"}, {"nl": "kon (kunnen)", "en": "could"}, {"nl": "inschrijven", "en": "register"}, {"nl": "baby (de)", "en": "baby"}, {"nl": "wachtlijst (de)", "en": "waiting list"}, {"nl": "gekozen (kiezen)", "en": "chosen"}, {"nl": "openbare (openbaar)", "en": "public"}, {"nl": "afstand (de)", "en": "distance"}, {"nl": "hoeven", "en": "need to"}, {"nl": "brengen", "en": "bring"}, {"nl": "organiseert (organiseren)", "en": "is organizing"}, {"nl": "opvang (de)", "en": "(after school) care"}, {"nl": "leerlingen (de leerling)", "en": "pupils"}, {"nl": "naar hun zin (hebben)", "en": "pleasant"}, {"nl": "zowel … als", "en": "both"}, {"nl": "helemaal", "en": "totally"}, {"nl": "bang voor", "en": "afraid of"}, {"nl": "juffrouw (de)", "en": "female teacher"}, {"nl": "namelijk", "en": "namely"}, {"nl": "streng", "en": "strict"}, {"nl": "moesten (moeten)", "en": "had to"}, {"nl": "stil", "en": "quiet"}, {"nl": "druk (de)", "en": "pressure"}, {"nl": "hoog", "en": "high"}, {"nl": "handen (de hand)", "en": "hands"}, {"nl": "verhalen (het verhaal)", "en": "stories"}, {"nl": "zingen", "en": "sing"}, {"nl": "liedjes (het liedje)", "en": "songs"}, {"nl": "betekenis (de)", "en": "meaning"}, {"nl": "schrijven", "en": "write"}, {"nl": "rekenen", "en": "do math"}, {"nl": "krijgen", "en": "get"}, {"nl": "onder andere", "en": "among (others)"}, {"nl": "tekenen", "en": "drawing"}, {"nl": "geschiedenis (de)", "en": "history"}, {"nl": "natuur (de)", "en": "nature"}, {"nl": "allerlei", "en": "all kinds of"}, {"nl": "dieren (het dier)", "en": "animals"}, {"nl": "slecht", "en": "bad"}, {"nl": "belangrijker", "en": "more important"}, {"nl": "cijfers (het cijfer)", "en": "grades"}, {"nl": "mogen", "en": "are allowed to"}, {"nl": "kiezen", "en": "choose"}, {"nl": "middelbare (middelbaar)", "en": "secondary"}, {"nl": "keuze (de)", "en": "choice"}, {"nl": "verschillende (verschillend)", "en": "various"}, {"nl": "sterke (sterk)", "en": "strong"}, {"nl": "zwakke (zwak)", "en": "weak"}, {"nl": "punten (het punt)", "en": "points"}]}, "17": {"title": "Wie doet het huishouden?", "words": [{"nl": "doet (doen)", "en": "is doing"}, {"nl": "huishouden (het)", "en": "housekeeping"}, {"nl": "onderzoek (het)", "en": "research"}, {"nl": "blijkt", "en": "shows"}, {"nl": "een op de …", "en": "one in ..."}, {"nl": "procent (het)", "en": "percent"}, {"nl": "werkelijk", "en": "really"}, {"nl": "vragen aan", "en": "ask"}, {"nl": "absoluut", "en": "absolutely"}, {"nl": "kook (koken)", "en": "cook"}, {"nl": "zet koffie (koffie zetten)", "en": "make coffee"}, {"nl": "wat", "en": "some"}, {"nl": "dagelijkse (dagelijks)", "en": "daily"}, {"nl": "opruimen", "en": "tidying up"}, {"nl": "afwassen", "en": "doing the dishes"}, {"nl": "schoonmaken", "en": "cleaning"}, {"nl": "was (de)", "en": "laundry"}, {"nl": "soort (de)", "en": "kind"}, {"nl": "zaken (de zaak)", "en": "things"}, {"nl": "daar … voor", "en": "for that"}, {"nl": "aardige", "en": "nice"}, {"nl": "uiteraard", "en": "of course"}, {"nl": "plezier (het)", "en": "pleasure"}, {"nl": "hobby (de)", "en": "hobby"}, {"nl": "tegenwoordig", "en": "nowadays"}, {"nl": "hard", "en": "hard"}, {"nl": "wasmachine (de)", "en": "washing machine"}, {"nl": "avond (de)", "en": "evening"}, {"nl": "verleden tijd", "en": "past"}, {"nl": "neem", "en": "take"}, {"nl": "verdient (verdienen)", "en": "earns"}, {"nl": "geld (het)", "en": "money"}, {"nl": "zorgt (zorgen)", "en": "takes care"}, {"nl": "modern", "en": "modern"}, {"nl": "dertien", "en": "thirteen"}, {"nl": "vrouwen (de vrouw)", "en": "women"}, {"nl": "onmogelijk", "en": "impossible"}, {"nl": "houden", "en": "keep"}, {"nl": "blijft (blijven)", "en": "stays"}, {"nl": "toilet (het)", "en": "toilet"}, {"nl": "taken (de taak)", "en": "tasks"}, {"nl": "daar … in", "en": "in that"}, {"nl": "zoveel", "en": "that much"}, {"nl": "verdeeld (verdelen)", "en": "divided"}, {"nl": "deden (doen)", "en": "did"}, {"nl": "vrouw (de)", "en": "wife"}, {"nl": "volledige (volledig)", "en": "full-time"}, {"nl": "baan (de)", "en": "job"}, {"nl": "halve (half)", "en": "half"}, {"nl": "grootste", "en": "biggest"}, {"nl": "deel (het)", "en": "part"}, {"nl": "kookt (koken)", "en": "cooks"}, {"nl": "degene", "en": "the one"}, {"nl": "wassen … af (afwassen)", "en": "do the dishes"}]}, "18": {"title": "De huisarts", "words": [{"nl": "huisarts (de)", "en": "general practitioner"}, {"nl": "ziek", "en": "sick"}, {"nl": "of", "en": "whether"}, {"nl": "ziekenhuis (het)", "en": "hospital"}, {"nl": "problemen (het probleem)", "en": "problems"}, {"nl": "oplossen", "en": "solve"}, {"nl": "oorpijn (de)", "en": "earache"}, {"nl": "pijn (de)", "en": "pain"}, {"nl": "rug (de)", "en": "back"}, {"nl": "been (het)", "en": "leg"}, {"nl": "hand (de)", "en": "hand"}, {"nl": "zoekt (zoeken)", "en": "searches"}, {"nl": "oorzaak (de)", "en": "cause"}, {"nl": "ziekte (de)", "en": "disease"}, {"nl": "beter", "en": "better"}, {"nl": "worden", "en": "get"}, {"nl": "mond (de)", "en": "mouth"}, {"nl": "hart (het)", "en": "heart"}, {"nl": "stelt vragen", "en": "asks questions"}, {"nl": "spanning (de)", "en": "stress"}, {"nl": "beweegt (bewegen)", "en": "exercise"}, {"nl": "bloed (het)", "en": "blood"}, {"nl": "laten", "en": "let"}, {"nl": "onderzoeken", "en": "investigate"}, {"nl": "medicijnen (het medicijn)", "en": "medicines"}, {"nl": "schrijft (schrijven)", "en": "writes"}, {"nl": "recept (het)", "en": "prescription"}, {"nl": "belt (bellen)", "en": "calls"}, {"nl": "patiënt (de)", "en": "patient"}, {"nl": "assistente (de)", "en": "assistant"}, {"nl": "dokter (de)", "en": "doctor"}, {"nl": "mogelijk", "en": "possible"}, {"nl": "aan de hand", "en": "the matter"}, {"nl": "ernstig", "en": "serious"}, {"nl": "lichaam (het)", "en": "body"}, {"nl": "volgens", "en": "according to"}, {"nl": "koorts (de)", "en": "fever"}, {"nl": "gezicht (het)", "en": "face"}, {"nl": "rood", "en": "red"}, {"nl": "heb last van (last hebben van)", "en": "suffer from"}, {"nl": "hoofdpijn (de)", "en": "headache"}, {"nl": "kijken", "en": "see"}, {"nl": "over", "en": "past"}, {"nl": "langskomen", "en": "come by"}, {"nl": "spreekuur (het)", "en": "consultation hour"}, {"nl": "momentje (het)", "en": "moment"}, {"nl": "overleg (overleggen)", "en": "discuss"}, {"nl": "vanmiddag", "en": "this afternoon"}, {"nl": "komt langs (langskomen)", "en": "comes by"}, {"nl": "lukt (lukken)", "en": "is possible"}, {"nl": "het spijt me", "en": "sorry"}, {"nl": "ondertussen", "en": "in the meantime"}, {"nl": "dag", "en": "bye"}, {"nl": "beterschap", "en": "get well soon"}]}, "19": {"title": "De bank", "words": [{"nl": "bank (de)", "en": "bank"}, {"nl": "van", "en": "about"}, {"nl": "vrije (vrij)", "en": "free"}, {"nl": "toch", "en": "nevertheless"}, {"nl": "rekening (de)", "en": "bank account"}, {"nl": "aangevraagd (aanvragen)", "en": "applied for"}, {"nl": "website (de)", "en": "website"}, {"nl": "kiest (kiezen)", "en": "choose"}, {"nl": "geeft (geven)", "en": "provide"}, {"nl": "burgerservicenummer (het)", "en": "citizen service number"}, {"nl": "klaar", "en": "ready"}, {"nl": "klaar is Kees", "en": "ready to go"}, {"nl": "banken (de bank)", "en": "banks"}, {"nl": "werkgever (de)", "en": "employer"}, {"nl": "overmaken (naar)", "en": "transfer"}, {"nl": "overheid (de)", "en": "government"}, {"nl": "noodzakelijk", "en": "necessary"}, {"nl": "studeer (studeren)", "en": "study"}, {"nl": "buitenland (het)", "en": "abroad"}, {"nl": "lieve (lief)", "en": "sweet"}, {"nl": "sturen", "en": "send"}, {"nl": "van alles", "en": "all kinds of things"}, {"nl": "parkeren", "en": "parking"}, {"nl": "regel (de)", "en": "arrange"}, {"nl": "pasje (het)", "en": "card"}, {"nl": "gebruikt (gebruiken)", "en": "use"}, {"nl": "pint (pinnen)", "en": "pay by debit card"}, {"nl": "bedrag (het)", "en": "amount"}, {"nl": "ov-kaart (de)", "en": "public transport card"}, {"nl": "opladen", "en": "load"}, {"nl": "contant", "en": "cash"}, {"nl": "geldautomaat (de)", "en": "cash machine"}, {"nl": "geopend", "en": "open"}, {"nl": "rekeningen (de rekening)", "en": "bills"}, {"nl": "automatisch", "en": "automatically"}, {"nl": "overgemaakt (overmaken)", "en": "transferred"}, {"nl": "creditcard (de)", "en": "credit card"}, {"nl": "manier (de)", "en": "manner"}, {"nl": "op dezelfde manier", "en": "in the same manner"}, {"nl": "stelt (stellen)", "en": "sets"}, {"nl": "eis (de)", "en": "requirement"}, {"nl": "uitgegeven (uitgeven)", "en": "spent"}, {"nl": "ontvangen", "en": "received"}, {"nl": "sta rood (rood staan)", "en": "are in the red"}, {"nl": "nog wat", "en": "some"}, {"nl": "fijner", "en": "nicer"}, {"nl": "sommigen", "en": "some people"}, {"nl": "maken …over (overmaken)", "en": "transfer"}, {"nl": "bewaren", "en": "save"}, {"nl": "zomaar", "en": "suddenly"}, {"nl": "miljoen (het)", "en": "million"}, {"nl": "rijker", "en": "richer"}, {"nl": "advies (het)", "en": "advice"}, {"nl": "geven", "en": "give"}, {"nl": "bezoek (het)", "en": "visit"}]}, "20": {"title": "De mooiste reis", "words": [{"nl": "mooiste", "en": "most beautiful"}, {"nl": "reizen", "en": "travel"}, {"nl": "reizen (de reis)", "en": "trips"}, {"nl": "gemaakt (maken)", "en": "made"}, {"nl": "plezier (het)", "en": "pleasure"}, {"nl": "collega's (de collega)", "en": "colleagues"}, {"nl": "vergadering (de)", "en": "meeting"}, {"nl": "vliegtuig (het)", "en": "airplane"}, {"nl": "slapen", "en": "sleep"}, {"nl": "hotel (het)", "en": "hotel"}, {"nl": "vliegen", "en": "fly"}, {"nl": "bijzonder", "en": "special"}, {"nl": "gingen (gaan)", "en": "used to go"}, {"nl": "reden (rijden)", "en": "drove"}, {"nl": "tent (de)", "en": "tent"}, {"nl": "spelletjes (het spelletje)", "en": "games"}, {"nl": "langste", "en": "longest"}, {"nl": "verste", "en": "farthest"}, {"nl": "geleden", "en": "ago"}, {"nl": "ging (gaan)", "en": "went"}, {"nl": "vliegveld (het)", "en": "airport"}, {"nl": "informatie (de)", "en": "information"}, {"nl": "kostte (kosten)", "en": "cost"}, {"nl": "mis", "en": "wrong"}, {"nl": "vertrok (vertrekken)", "en": "left"}, {"nl": "kwam (komen)", "en": "reached"}, {"nl": "daardoor", "en": "as a result"}, {"nl": "kwam … aan (aankomen)", "en": "arrived"}, {"nl": "zat (zitten)", "en": "sat"}, {"nl": "veertien", "en": "fourteen"}, {"nl": "waard (het waard zijn)", "en": "worth"}, {"nl": "was van plan (van plan zijn)", "en": "had been planning to"}, {"nl": "reisde (reizen)", "en": "travelled"}, {"nl": "vol", "en": "full"}, {"nl": "programma (het)", "en": "schedule"}, {"nl": "boot (de)", "en": "boat"}, {"nl": "rivier (de)", "en": "river"}, {"nl": "steden (de stad)", "en": "cities"}, {"nl": "dorpen (het dorp)", "en": "villages"}, {"nl": "bezochten (bezoeken)", "en": "visited"}, {"nl": "tijdens", "en": "during"}, {"nl": "enorm", "en": "enormous"}, {"nl": "ontmoet (ontmoeten)", "en": "met"}, {"nl": "contact (het)", "en": "contact"}, {"nl": "direct", "en": "immediately"}, {"nl": "huwelijk (het)", "en": "wedding"}, {"nl": "eiland (het)", "en": "island"}, {"nl": "bergen (de berg)", "en": "mountains"}, {"nl": "prachtige (prachtig)", "en": "gorgeous"}, {"nl": "geweldige (geweldig)", "en": "great"}, {"nl": "feesten (het feest)", "en": "parties"}, {"nl": "muziek (de)", "en": "music"}, {"nl": "theater (het)", "en": "theatre"}, {"nl": "open lucht (de)", "en": "open air"}, {"nl": "fantastisch", "en": "fantastic"}]}, "21": {"title": "Een dagje uit", "words": [{"nl": "dagje (het)", "en": "day"}, {"nl": "begin (het)", "en": "beginning"}, {"nl": "staan", "en": "stand up"}, {"nl": "uitgaan", "en": "go out"}, {"nl": "Markthal (de)", "en": "market hall"}, {"nl": "schijnt (schijnen)", "en": "seems"}, {"nl": "ergens", "en": "somewhere"}, {"nl": "draait (draaien)", "en": "is playing"}, {"nl": "spannende (spannend)", "en": "exciting"}, {"nl": "gaat … mee (meegaan)", "en": "comes along"}, {"nl": "uitstekend", "en": "excellent"}, {"nl": "plan (het)", "en": "plan"}, {"nl": "naast", "en": "next to"}, {"nl": "gelijk", "en": "right"}, {"nl": "voorstel (het)", "en": "proposal"}, {"nl": "hoogste", "en": "highest"}, {"nl": "toren (de)", "en": "tower"}, {"nl": "heel", "en": "entire"}, {"nl": "haven (de)", "en": "port"}, {"nl": "lichtjes (het lichtje)", "en": "lights"}, {"nl": "perfect", "en": "perfect"}, {"nl": "akkoord", "en": "in agreement"}, {"nl": "hoop (hopen)", "en": "hope"}, {"nl": "achter", "en": "behind"}, {"nl": "Italiaans", "en": "Italian"}, {"nl": "restaurant (het)", "en": "restaurant"}, {"nl": "is het eens (het eens zijn)", "en": "agrees"}, {"nl": "ermee", "en": "with it"}, {"nl": "met z'n tienen", "en": "with ten people"}, {"nl": "personen (de persoon)", "en": "people"}, {"nl": "reserveren", "en": "make a reservation"}, {"nl": "lijkt (lijken)", "en": "seems"}, {"nl": "tafel (de)", "en": "table"}, {"nl": "apart", "en": "separately"}, {"nl": "vindt (vinden)", "en": "finds"}, {"nl": "proberen", "en": "try"}, {"nl": "afspreken", "en": "arrange"}, {"nl": "keuze uit", "en": "choice of"}, {"nl": "vegetarisch", "en": "vegetarian"}, {"nl": "hoor (horen)", "en": "hear"}, {"nl": "prima", "en": "fine"}, {"nl": "stel … voor (voorstellen)", "en": "propose"}, {"nl": "ontmoeten", "en": "meet"}, {"nl": "centraal", "en": "central"}, {"nl": "rond", "en": "around"}, {"nl": "midden", "en": "middle"}, {"nl": "zichzelf", "en": "themselves"}, {"nl": "verliezen", "en": "lose"}, {"nl": "straks", "en": "later"}, {"nl": "delen", "en": "divide"}, {"nl": "totale (totaal)", "en": "total"}, {"nl": "door", "en": "by"}, {"nl": "onmiddelijk", "en": "immediately"}]}, "22": {"title": "De Nederlandse bevolking", "words": [{"nl": "bevolking (de)", "en": "population"}, {"nl": "hangt ervan af (afhangen van)", "en": "depends on it"}, {"nl": "ervan", "en": "on it"}, {"nl": "bekijkt (bekijken)", "en": "look at"}, {"nl": "inwoners (de inwoner)", "en": "inhabitants"}, {"nl": "minder", "en": "less"}, {"nl": "relatief", "en": "relatively"}, {"nl": "dichte (dicht)", "en": "dense"}, {"nl": "gemiddeld", "en": "average"}, {"nl": "kilometer (de)", "en": "kilometre"}, {"nl": "figuur (de)", "en": "figure"}, {"nl": "nogal", "en": "quite a bit"}, {"nl": "gegroeid (groeien)", "en": "grown"}, {"nl": "groei (de)", "en": "growth"}, {"nl": "gaat door", "en": "(goes) on"}, {"nl": "grote (groot)", "en": "big"}, {"nl": "oorzaken (de oorzaak)", "en": "causes"}, {"nl": "daarvan", "en": "of that"}, {"nl": "hoger", "en": "higher"}, {"nl": "gemiddelde (het)", "en": "average"}, {"nl": "EU", "en": "EU"}, {"nl": "groeit (groeien)", "en": "grows"}, {"nl": "doordat", "en": "because"}, {"nl": "leven", "en": "live"}, {"nl": "belangrijke (belangrijk)", "en": "important"}, {"nl": "immigratie (de)", "en": "immigration"}, {"nl": "behoefte aan", "en": "need of"}, {"nl": "vrijheid (de)", "en": "freedom"}, {"nl": "veiligheid (de)", "en": "safety"}, {"nl": "universiteit (de)", "en": "university"}, {"nl": "liefde (de)", "en": "love"}, {"nl": "verlaten", "en": "leave"}, {"nl": "juist", "en": "on the contrary"}, {"nl": "verklaring (de)", "en": "explanation"}, {"nl": "daarvoor", "en": "for that"}, {"nl": "vertrekken", "en": "leave"}, {"nl": "regels (de tegel)", "en": "rules"}, {"nl": "christelijk", "en": "Christian"}, {"nl": "protestantse (protestants)", "en": "Protestant"}, {"nl": "rechten (het recht)", "en": "rights"}, {"nl": "godsdienst", "en": "religion"}, {"nl": "katholieken (de katholiek)", "en": "Catholics"}, {"nl": "joden (de jood)", "en": "Jews"}, {"nl": "staat (de)", "en": "state"}, {"nl": "godsdiensten (de godsdienst)", "en": "religions"}, {"nl": "gelijke (gelijk)", "en": "equal"}, {"nl": "christenen (de christen)", "en": "Christians"}, {"nl": "afgenomen (afnemen)", "en": "decreased"}, {"nl": "in", "en": "in"}, {"nl": "God (de)", "en": "God"}, {"nl": "geloven", "en": "believe"}, {"nl": "op basis van", "en": "on"}, {"nl": "vaststellen", "en": "determine"}, {"nl": "grootst", "en": "biggest"}]}, "23": {"title": "Op de helft", "words": [{"nl": "op de helft", "en": "half(way)"}, {"nl": "sinds", "en": "since"}, {"nl": "hoofdstuk (het)", "en": "chapter"}, {"nl": "begonnen (beginnen)", "en": "started"}, {"nl": "onderwerpen (het onderwerp)", "en": "topics"}, {"nl": "behandeld (behandelen)", "en": "treated"}, {"nl": "inmiddels", "en": "by now"}, {"nl": "vast", "en": "certainly"}, {"nl": "gemerkt (merken)", "en": "noticed"}, {"nl": "gemakkelijk", "en": "easy"}, {"nl": "maar", "en": "just"}, {"nl": "ondanks", "en": "despite"}, {"nl": "behoorlijk", "en": "fairly"}, {"nl": "verklaar (verklaren)", "en": "explain"}, {"nl": "simpel", "en": "simple"}, {"nl": "redenen (de reden)", "en": "reasons"}, {"nl": "gebruik (gebruiken)", "en": "use"}, {"nl": "regelmatig", "en": "regularly"}, {"nl": "rest (de)", "en": "rest"}, {"nl": "nauwelijks", "en": "hardly at all"}, {"nl": "grammatica (de)", "en": "grammar"}, {"nl": "lastig", "en": "difficult"}, {"nl": "immers", "en": "after all"}, {"nl": "fout (de)", "en": "error"}, {"nl": "maken", "en": "make"}, {"nl": "fouten (de fout)", "en": "errors"}, {"nl": "door", "en": "by"}, {"nl": "verdwijnen", "en": "disappear"}, {"nl": "zulke", "en": "such"}, {"nl": "in de loop van de tijd", "en": "over time"}, {"nl": "tellen", "en": "counting"}, {"nl": "vraag (vragen aan)", "en": "ask"}, {"nl": "plus", "en": "plus"}, {"nl": "min", "en": "minus"}, {"nl": "feit (het)", "en": "fact"}, {"nl": "slechts", "en": "only"}, {"nl": "eerlijk", "en": "honestly"}, {"nl": "gezegd (zeggen)", "en": "spoken"}, {"nl": "daar … mee", "en": "with that"}, {"nl": "mee eens (het er -- -- zijn)", "en": "agree"}, {"nl": "makkelijker", "en": "easier"}, {"nl": "beseft (beseffen)", "en": "realize"}, {"nl": "zowat", "en": "almost"}, {"nl": "onthouden", "en": "remember"}, {"nl": "herhaalt (herhalen)", "en": "repeat"}, {"nl": "voldoende", "en": "enough"}, {"nl": "besteden aan", "en": "spend on"}, {"nl": "onderwerp (het)", "en": "topic"}, {"nl": "discussie (de)", "en": "discussion"}, {"nl": "mening (de)", "en": "opinion"}]}, "24": {"title": "Trouwen, samenwonen of liever alleen blijven?", "words": [{"nl": "trouwen", "en": "marry"}, {"nl": "blijven", "en": "stay"}, {"nl": "getuige (de)", "en": "witness"}, {"nl": "mooie (mooi)", "en": "beautiful"}, {"nl": "gemeentehuis (het)", "en": "city hall"}, {"nl": "verplicht", "en": "obligated"}, {"nl": "ambtenaar (de)", "en": "civil servant"}, {"nl": "vertelde (vertellen)", "en": "told"}, {"nl": "dienst (de)", "en": "service"}, {"nl": "maakte (maken)", "en": "made"}, {"nl": "indruk (de)", "en": "impression"}, {"nl": "beloofden (beloven)", "en": "promised"}, {"nl": "zorgen voor", "en": "take care"}, {"nl": "trouwde (trouwen)", "en": "married"}, {"nl": "man (de)", "en": "man"}, {"nl": "beloven", "en": "promise"}, {"nl": "huwelijken (het huwelijk)", "en": "marriages"}, {"nl": "eindigt (eindigen)", "en": "ends"}, {"nl": "scheiding (de)", "en": "divorce"}, {"nl": "negatief", "en": "negative"}, {"nl": "geweldig", "en": "great"}, {"nl": "ooit", "en": "at some point"}, {"nl": "feest (het)", "en": "party"}, {"nl": "zaal (de)", "en": "hall"}, {"nl": "wel", "en": "no less than"}, {"nl": "gasten (de gast)", "en": "guests"}, {"nl": "aanwezig", "en": "present"}, {"nl": "vertelden (vertellen)", "en": "told"}, {"nl": "lied (het)", "en": "song"}, {"nl": "gezellige (gezellig)", "en": "entertaining"}, {"nl": "vreselijk", "en": "horrible"}, {"nl": "zou (zullen)", "en": "would"}, {"nl": "doel (het)", "en": "goal"}, {"nl": "om", "en": "to"}, {"nl": "opleiding (de)", "en": "education"}, {"nl": "afmaken", "en": "finish"}, {"nl": "relatie (de)", "en": "relationship"}, {"nl": "regelen", "en": "arrange"}, {"nl": "officieel", "en": "officially"}, {"nl": "registreert (registreren)", "en": "register"}, {"nl": "rustig", "en": "quiet"}, {"nl": "symbool (het)", "en": "symbol"}, {"nl": "bijzondere (bijzonder)", "en": "special"}, {"nl": "band (de)", "en": "bond"}, {"nl": "tradities (de traditie)", "en": "traditions"}, {"nl": "samenleving (de)", "en": "society"}, {"nl": "rol (de)", "en": "role"}, {"nl": "leuker", "en": "more fun"}, {"nl": "jonge (jong)", "en": "young"}]}, "25": {"title": "De kaart van Nederland", "words": [{"nl": "kaart (de)", "en": "map"}, {"nl": "ziet er uit", "en": "looks like"}, {"nl": "ten eerste", "en": "first of all"}, {"nl": "noord", "en": "north"}, {"nl": "zuid", "en": "south"}, {"nl": "west", "en": "west"}, {"nl": "oost", "en": "east"}, {"nl": "grens (de)", "en": "border"}, {"nl": "België", "en": "Belgium"}, {"nl": "Duitsland", "en": "Germany"}, {"nl": "vlak", "en": "flat"}, {"nl": "zuiden (het)", "en": "south"}, {"nl": "provincie (de)", "en": "province"}, {"nl": "Limburg", "en": "Limburg"}, {"nl": "bergje (het)", "en": "small mountain"}, {"nl": "daar … op", "en": "of it"}, {"nl": "trots", "en": "proud"}, {"nl": "zag (zien)", "en": "saw"}, {"nl": "Zwitserland", "en": "Switzerland"}, {"nl": "laag", "en": "low"}, {"nl": "laagste", "en": "lowest"}, {"nl": "gebieden (het gebied)", "en": "areas"}, {"nl": "liggen", "en": "are located"}, {"nl": "westen (het)", "en": "west"}, {"nl": "onder", "en": "below"}, {"nl": "zeeniveau (het)", "en": "sea level"}, {"nl": "dijken (de dijk)", "en": "dikes"}, {"nl": "dammen (de dam)", "en": "dams"}, {"nl": "droog", "en": "dry"}, {"nl": "stukken (het stuk)", "en": "pieces"}, {"nl": "eilanden (het eiland)", "en": "islands"}, {"nl": "noorden (het)", "en": "north"}, {"nl": "zuidwesten (het)", "en": "southwest"}, {"nl": "vierde", "en": "fourth"}, {"nl": "rivieren (de rivier)", "en": "rivers"}, {"nl": "schepen (het schip)", "en": "ships"}, {"nl": "wegen (de weg)", "en": "roads"}, {"nl": "vormt (vormen)", "en": "forms"}, {"nl": "gevaar (het gevaar)", "en": "danger"}, {"nl": "breken", "en": "break"}, {"nl": "ramp (de)", "en": "disaster"}, {"nl": "gebeurde (gebeuren)", "en": "happened"}, {"nl": "nog eens", "en": "more"}, {"nl": "gebeuren", "en": "happen"}, {"nl": "groen", "en": "green"}, {"nl": "enkele", "en": "a few"}, {"nl": "gebouwd (bouwen)", "en": "built"}, {"nl": "kleiner", "en": "smaller"}, {"nl": "groeien", "en": "grow"}, {"nl": "woningen (de woning)", "en": "houses"}, {"nl": "bedrijven (het bedrijf)", "en": "businesses"}, {"nl": "ten slotte", "en": "lastly"}, {"nl": "noem (noemen)", "en": "call"}, {"nl": "stranden (het strand)", "en": "beaches"}, {"nl": "'t (het)", "en": "the"}, {"nl": "zoiets", "en": "something like that"}]}, "26": {"title": "De politie: (niet) m'n beste vriend!", "words": [{"nl": "politie (de)", "en": "police"}, {"nl": "laatst", "en": "recently"}, {"nl": "reed (rijden)", "en": "drove"}, {"nl": "weg (de)", "en": "road"}, {"nl": "help (helpen)", "en": "help"}, {"nl": "deed (doen)", "en": "did"}, {"nl": "verkeerd", "en": "wrong"}, {"nl": "vreemd", "en": "strange"}, {"nl": "hè", "en": "isn't it"}, {"nl": "gevoel (het)", "en": "feeling"}, {"nl": "iets verkeerds", "en": "something wrong"}, {"nl": "raar", "en": "weird"}, {"nl": "helpt (helpen)", "en": "helps"}, {"nl": "ongeluk (het)", "en": "accident"}, {"nl": "gebeurd (gebeuren)", "en": "happened"}, {"nl": "rijd (rijden)", "en": "drive"}, {"nl": "door", "en": "through"}, {"nl": "maakt (maken)", "en": "takes"}, {"nl": "foto (de)", "en": "photo"}, {"nl": "licht (het)", "en": "light"}, {"nl": "wijst (wijzen)", "en": "points out"}, {"nl": "gevaren (het gevaar)", "en": "dangers"}, {"nl": "boete (de)", "en": "fine"}, {"nl": "betaalt (betalen)", "en": "pay"}, {"nl": "biertjes (het biertje)", "en": "beers"}, {"nl": "gedronken (drinken)", "en": "drunk"}, {"nl": "rijden", "en": "drive"}, {"nl": "agent (de)", "en": "police officer"}, {"nl": "veilig", "en": "safely"}, {"nl": "aankomt (aankomen)", "en": "arrive"}, {"nl": "politiebureau (het)", "en": "police station"}, {"nl": "geef (geven)", "en": "throw"}, {"nl": "feestje (het)", "en": "party"}, {"nl": "horen", "en": "hear"}, {"nl": "toont (tonen)", "en": "shows"}, {"nl": "belangstelling (de)", "en": "interest"}, {"nl": "duren", "en": "last"}, {"nl": "onbekende (onbekend)", "en": "stranger"}, {"nl": "legt … uit (uitleggen)", "en": "explains"}, {"nl": "stelen", "en": "steal"}, {"nl": "gestolen (stelen)", "en": "stolen"}, {"nl": "conclusie (de)", "en": "conclusion"}, {"nl": "vorige (vorig)", "en": "last"}, {"nl": "ingebroken (inbreken)", "en": "broken into"}, {"nl": "meteen", "en": "immediately"}, {"nl": "zeer", "en": "very"}, {"nl": "zaak (de)", "en": "case"}, {"nl": "laat (laten)", "en": "let (make)"}, {"nl": "lachen", "en": "laugh"}, {"nl": "slechte (slecht)", "en": "bad"}, {"nl": "ervaringen (de ervaring)", "en": "experiences"}, {"nl": "aangifte (de)", "en": "police report"}, {"nl": "aangifte doen", "en": "file a police report"}, {"nl": "ieder", "en": "every"}, {"nl": "duizenden", "en": "thousands"}, {"nl": "fietsen (de fiets)", "en": "bicycles"}]}, "27": {"title": "Feest vieren", "words": [{"nl": "vieren", "en": "celebrate"}, {"nl": "gefeliciteerd", "en": "congratulations"}, {"nl": "verjaardag (de)", "en": "birthday"}, {"nl": "vele (veel)", "en": "many"}, {"nl": "cadeautje (het)", "en": "present"}, {"nl": "meegebracht (meebrengen)", "en": "brought along"}, {"nl": "blij", "en": "happy"}, {"nl": "drinken", "en": "drinks"}, {"nl": "bedoeling (de)", "en": "idea"}, {"nl": "uitgebreid", "en": "extensively"}, {"nl": "geven", "en": "give (throw)"}, {"nl": "vanwege", "en": "because of"}, {"nl": "ter gelegenheid van", "en": "on the occasion of"}, {"nl": "gelegenheid (de)", "en": "occasion"}, {"nl": "examen (het)", "en": "exam"}, {"nl": "gebeurtenis (de)", "en": "event"}, {"nl": "gevonden (vinden)", "en": "found"}, {"nl": "geworden (worden)", "en": "turned"}, {"nl": "bedenken", "en": "think of"}, {"nl": "kennen", "en": "know"}, {"nl": "nationale (nationaal)", "en": "national"}, {"nl": "april", "en": "April"}, {"nl": "koningsdag (de)", "en": "King's Day"}, {"nl": "dan", "en": "then"}, {"nl": "koning (de)", "en": "king"}, {"nl": "koningin (de)", "en": "queen"}, {"nl": "bezoeken", "en": "visit"}, {"nl": "elk", "en": "each"}, {"nl": "bepaalde (bepaald)", "en": "certain"}, {"nl": "mei", "en": "May"}, {"nl": "einde (het)", "en": "end"}, {"nl": "wereldoorlog (de)", "en": "World War"}, {"nl": "ter herinnering aan", "en": "in memory of"}, {"nl": "herinnering (de)", "en": "memory"}, {"nl": "slachtoffers (het slachtoffer)", "en": "victims"}, {"nl": "oorlog (de)", "en": "war"}, {"nl": "Sinterklaas", "en": "Saint Nicholas"}, {"nl": "brengt (brengen)", "en": "brings"}, {"nl": "cadeautjes (het cadeautje)", "en": "presents"}, {"nl": "Spanje", "en": "Spain"}, {"nl": "volwassenen (de volwassene)", "en": "adults"}, {"nl": "persoonlijk", "en": "in person"}, {"nl": "cadeau (het cadeau)", "en": "present"}, {"nl": "gedicht (het)", "en": "poem"}, {"nl": "knap", "en": "amazing"}, {"nl": "Kerst", "en": "Christmas"}, {"nl": "Nieuwjaar", "en": "New Year"}, {"nl": "feestdag (de)", "en": "holiday"}, {"nl": "moslims (de moslim)", "en": "Muslims"}, {"nl": "Suikerfeest (het)", "en": "Sugar Feast"}, {"nl": "datum (de)", "en": "date"}, {"nl": "echter", "en": "however"}]}, "28": {"title": "De Randstad", "words": [{"nl": "Randstad", "en": "Randstad"}, {"nl": "gebied (het)", "en": "area"}, {"nl": "bestaat uit (bestaan uit)", "en": "consists of"}, {"nl": "erin", "en": "in it"}, {"nl": "in feite", "en": "in fact"}, {"nl": "beschouwen", "en": "consider"}, {"nl": "geheel", "en": "entity"}, {"nl": "plek (de)", "en": "place"}, {"nl": "Europa", "en": "Europe"}, {"nl": "Schiphol", "en": "Schiphol"}, {"nl": "behoort tot (behoren tot)", "en": "is amongst"}, {"nl": "schip (het)", "en": "ship"}, {"nl": "vanuit", "en": "from"}, {"nl": "bereiken", "en": "reach"}, {"nl": "om die reden", "en": "for"}, {"nl": "reden (de)", "en": "reason"}, {"nl": "gevestigd (vestigen)", "en": "located"}, {"nl": "handel (de)", "en": "trade"}, {"nl": "Keukenhof (de)", "en": "Keukenhof"}, {"nl": "logische (logisch)", "en": "logical"}, {"nl": "gevolg (het)", "en": "consequence"}, {"nl": "hiervan", "en": "of this"}, {"nl": "werk (het)", "en": "work"}, {"nl": "terwijl", "en": "whereas"}, {"nl": "1/5 = één vijfde", "en": "1/5 = one fifth"}, {"nl": "gebrek (het)", "en": "lack"}, {"nl": "gebrek aan", "en": "lack of"}, {"nl": "geschikte (geschikt)", "en": "suitable"}, {"nl": "elders", "en": "elsewhere"}, {"nl": "tuin (de)", "en": "garden"}, {"nl": "vandaar", "en": "that's why"}, {"nl": "verkeer (het)", "en": "traffic"}, {"nl": "volledig", "en": "completely"}, {"nl": "vast", "en": "stuck"}, {"nl": "negatieve (negatief)", "en": "negative"}, {"nl": "gevolgen (het gevolg)", "en": "effects"}, {"nl": "lucht (de)", "en": "air"}, {"nl": "men", "en": "one"}, {"nl": "verliest (verliezen)", "en": "loses"}, {"nl": "nationaliteiten (de nationaliteit)", "en": "nationalities"}, {"nl": "landen (het land)", "en": "countries"}, {"nl": "Angola", "en": "Angola"}, {"nl": "Zweden", "en": "Sweden"}, {"nl": "tram (de)", "en": "tram"}, {"nl": "hoort (horen)", "en": "hear"}, {"nl": "heel wat", "en": "many"}, {"nl": "herken (herkennen)", "en": "recognize"}]}, "29": {"title": "Vrije tijd", "words": [{"nl": "vrije tijd (de)", "en": "free time"}, {"nl": "betekent (betekenen)", "en": "means"}, {"nl": "genieten (van)", "en": "enjoying"}, {"nl": "rust (de)", "en": "peace and quiet"}, {"nl": "actief", "en": "active"}, {"nl": "drukker", "en": "more busy"}, {"nl": "bepaalt (bepalen)", "en": "determines"}, {"nl": "waarop", "en": "in which"}, {"nl": "besteedt (besteden)", "en": "spend"}, {"nl": "media (het medium)", "en": "media"}, {"nl": "invloed (de)", "en": "influence"}, {"nl": "precies", "en": "exactly"}, {"nl": "besteed (besteden)", "en": "spend"}, {"nl": "normaal gesproken", "en": "normally"}, {"nl": "sport (de)", "en": "sports"}, {"nl": "belangstelling voor", "en": "interest in"}, {"nl": "wel eens", "en": "once in a while"}, {"nl": "concert (het)", "en": "concert"}, {"nl": "bij voorkeur", "en": "with"}, {"nl": "voorkeur (de)", "en": "preference"}, {"nl": "serieuze (serieus)", "en": "serious"}, {"nl": "films (de film)", "en": "movies"}, {"nl": "hou (houden)", "en": "love"}, {"nl": "voetbal", "en": "play football"}, {"nl": "veld (het)", "en": "field"}, {"nl": "wandel (wandelen)", "en": "walk"}, {"nl": "na … denken (nadenken)", "en": "ponder"}, {"nl": "ga … uit (uitgaan)", "en": "go out"}, {"nl": "café (het)", "en": "cafe"}, {"nl": "uit eten", "en": "out"}, {"nl": "vrijwel", "en": "almost"}, {"nl": "dansen", "en": "dancing"}, {"nl": "beweging (de)", "en": "exercise"}, {"nl": "restaurants (het restaurant)", "en": "restaurants"}, {"nl": "nodig … uit (uitnodigen)", "en": "invite"}, {"nl": "extra", "en": "extra"}, {"nl": "waarmee", "en": "with what"}, {"nl": "vul (vullen)", "en": "fill"}, {"nl": "in het algemeen", "en": "generally"}, {"nl": "computer (de)", "en": "computer"}, {"nl": "berichten (het bericht)", "en": "messages"}, {"nl": "bel (bellen)", "en": "call"}, {"nl": "tv (de)", "en": "TV"}, {"nl": "voetbalwedstrijd (de)", "en": "football match"}, {"nl": "tegen", "en": "against"}, {"nl": "Belgen (de Belg)", "en": "Belgians"}, {"nl": "genoemd (noemen)", "en": "mentioned"}, {"nl": "bezig", "en": "busy"}, {"nl": "mobieltjes (het mobieltje)", "en": "mobile phones"}, {"nl": "computers (de computer)", "en": "computers"}, {"nl": "in orde maken", "en": "fix"}, {"nl": "klant (de)", "en": "customer"}, {"nl": "sociale (sociaal)", "en": "social"}, {"nl": "contacten (het contact)", "en": "contacts"}]}, "30": {"title": "Werk", "words": [{"nl": "lang", "en": "by far"}, {"nl": "pensioen (het)", "en": "pension"}, {"nl": "aow (de)", "en": "AOW"}, {"nl": "gewerkt (werken)", "en": "worked"}, {"nl": "in deeltijd", "en": "part-time"}, {"nl": "iedere", "en": "every"}, {"nl": "mogelijkheden (de mogelijkheid)", "en": "opportunities"}, {"nl": "hangt … af van (afhangen van)", "en": "depends on"}, {"nl": "beroep (het)", "en": "profession"}, {"nl": "zorg (de)", "en": "healthcare"}, {"nl": "onderwijs (het)", "en": "education"}, {"nl": "techniek (de)", "en": "engineering"}, {"nl": "personeel (het)", "en": "personnel"}, {"nl": "eenvoudig", "en": "simple"}, {"nl": "verdwijnt (verdwijnen)", "en": "is disappearing"}, {"nl": "machines (de machine)", "en": "machines"}, {"nl": "van belang", "en": "importance"}, {"nl": "tijdelijk", "en": "temporary"}, {"nl": "telkens", "en": "time and time"}, {"nl": "opnieuw", "en": "again"}, {"nl": "ervaring", "en": "experience"}, {"nl": "toekomst (de)", "en": "future"}, {"nl": "betaald (betalen)", "en": "paid"}, {"nl": "stages (de stage)", "en": "internships"}, {"nl": "vakantiewerk (het)", "en": "holiday jobs"}, {"nl": "studie (de)", "en": "study"}, {"nl": "telt (tellen)", "en": "counts"}, {"nl": "kennis (de)", "en": "knowledge"}, {"nl": "bezitten", "en": "possess"}, {"nl": "net", "en": "just"}, {"nl": "verdienen", "en": "earn"}, {"nl": "wat", "en": "a bit"}, {"nl": "zo zie je maar", "en": "it goes to show"}, {"nl": "ouder", "en": "older"}, {"nl": "oud", "en": "old"}, {"nl": "beide", "en": "both"}, {"nl": "ineens", "en": "suddenly"}, {"nl": "werkloos", "en": "unemployed"}, {"nl": "ontslagen (ontslaan)", "en": "laid off"}, {"nl": "waarvan", "en": "from what"}, {"nl": "loon (het)", "en": "salary"}, {"nl": "gedurende", "en": "during"}, {"nl": "enige (enig)", "en": "some"}, {"nl": "oude (oud)", "en": "previous"}, {"nl": "uitkering (de)", "en": "benefits"}, {"nl": "regering (de)", "en": "government"}, {"nl": "daarover", "en": "about that"}, {"nl": "werkervaring (de)", "en": "work experience"}]}, "31": {"title": "Blijf gezond!", "words": [{"nl": "blijf (blijven)", "en": "stay"}, {"nl": "overlijden", "en": "die"}, {"nl": "haal (halen)", "en": "get"}, {"nl": "complete (compleet)", "en": "complete"}, {"nl": "vet (het)", "en": "fat"}, {"nl": "suiker (de)", "en": "sugar"}, {"nl": "jammer", "en": "it's a shame"}, {"nl": "dik", "en": "fat"}, {"nl": "bewegen", "en": "move"}, {"nl": "benen (het been)", "en": "legs"}, {"nl": "voeten (de voet)", "en": "feet"}, {"nl": "kans op", "en": "of"}, {"nl": "rugproblemen", "en": "back problems"}, {"nl": "harde (hard)", "en": "loud"}, {"nl": "krijgen last van (last krijgen van)", "en": "get problems with"}, {"nl": "oren (het)", "en": "ears"}, {"nl": "alcohol (de)", "en": "alcohol"}, {"nl": "gevaarlijk", "en": "dangerous"}, {"nl": "leidt tot (leiden tot)", "en": "leads to"}, {"nl": "ongelukken (het ongeluk)", "en": "accidents"}, {"nl": "neemt … toe (toenemen)", "en": "increases"}, {"nl": "onder", "en": "among"}, {"nl": "jeugd (de)", "en": "youth"}, {"nl": "raad (de)", "en": "advice"}, {"nl": "artsen (de arts)", "en": "doctors"}, {"nl": "beweren", "en": "claim"}, {"nl": "rode (rood)", "en": "red"}, {"nl": "wijn (de)", "en": "wine"}, {"nl": "wetenschappelijk", "en": "scientifically"}, {"nl": "bewezen (bewijzen)", "en": "proven"}, {"nl": "waarschijnlijk", "en": "probably"}, {"nl": "verband (het)", "en": "connection"}, {"nl": "geloven", "en": "believe"}, {"nl": "geniet van (genieten van)", "en": "enjoy"}, {"nl": "leven (het)", "en": "life"}, {"nl": "roken", "en": "smoking"}, {"nl": "stem (de)", "en": "voice"}, {"nl": "jezelf", "en": "yourself"}, {"nl": "jongeren (de jongere)", "en": "young people"}, {"nl": "sigaretten (de sigaret)", "en": "cigarettes"}, {"nl": "verkocht (verkopen)", "en": "sold"}, {"nl": "stations (het station)", "en": "train stations"}, {"nl": "cafés (het café)", "en": "cafes"}, {"nl": "plaatsen (de plaats)", "en": "places"}, {"nl": "verboden", "en": "forbidden"}, {"nl": "stoppen", "en": "stopping"}, {"nl": "verbiedt (verbieden)", "en": "forbids"}, {"nl": "wellicht", "en": "perhaps"}, {"nl": "bier (het)", "en": "beer"}, {"nl": "daarvan", "en": "of that"}]}, "32": {"title": "Mooi Nederland", "words": [{"nl": "speciaal", "en": "especially"}, {"nl": "bieden", "en": "offer"}, {"nl": "gezien (zien)", "en": "seen"}, {"nl": "durft (durven)", "en": "dares"}, {"nl": "genomen (nemen)", "en": "taken"}, {"nl": "rijdt (rijden)", "en": "rides"}, {"nl": "rechtstreeks", "en": "directly"}, {"nl": "ideaal", "en": "ideal"}, {"nl": "grachten (de gracht)", "en": "canals"}, {"nl": "meemaken", "en": "experience"}, {"nl": "gebouwen (het gebouw)", "en": "buildings"}, {"nl": "zeventiende", "en": "seventeenth"}, {"nl": "eeuw (de eeuw)", "en": "century"}, {"nl": "langs", "en": "along"}, {"nl": "vervolgens", "en": "after that"}, {"nl": "afspraak (de)", "en": "appointment"}, {"nl": "hoewel", "en": "although"}, {"nl": "zo'n", "en": "such a"}, {"nl": "minstens", "en": "at least"}, {"nl": "voordat", "en": "before"}, {"nl": "konden (kunnen)", "en": "could"}, {"nl": "musea (het museum)", "en": "museums"}, {"nl": "trekken", "en": "attract"}, {"nl": "eenmaal", "en": "after all"}, {"nl": "publiek (het)", "en": "people"}, {"nl": "kunst (de)", "en": "art"}, {"nl": "de moeite waard", "en": "worth the effort"}, {"nl": "moeite (de)", "en": "effort"}, {"nl": "waard", "en": "worth"}, {"nl": "namen (nemen)", "en": "took"}, {"nl": "stopt (stoppen)", "en": "stops"}, {"nl": "verhaal (het)", "en": "story"}, {"nl": "volgt (volgen)", "en": "is next"}, {"nl": "aanleiding (de)", "en": "reason"}, {"nl": "tonen", "en": "show"}, {"nl": "soorten (de soort)", "en": "types"}, {"nl": "tulpen (de tulp)", "en": "tulips"}, {"nl": "kleuren (de kleur)", "en": "colours"}, {"nl": "bekend", "en": "well-known"}, {"nl": "gezongen (zingen)", "en": "sung"}, {"nl": "Deltapark (het)", "en": "Deltapark"}, {"nl": "bezocht (bezoeken)", "en": "visited"}, {"nl": "Zeeland", "en": "Zeeland"}, {"nl": "beschermd (beschermen)", "en": "protected"}, {"nl": "tegen", "en": "against"}, {"nl": "beschouwt (beschouwen)", "en": "considers"}, {"nl": "systeem (het)", "en": "system"}, {"nl": "moderne (modern)", "en": "modern"}, {"nl": "wereldwonderen (het werelwonder)", "en": "wonders of the world"}, {"nl": "terecht", "en": "justified"}]}, "33": {"title": "De papieren", "words": [{"nl": "papieren (het papier)", "en": "papers"}, {"nl": "formulieren (het formulier)", "en": "forms"}, {"nl": "invullen", "en": "fill out"}, {"nl": "gesprekken (het gesprek)", "en": "conversations"}, {"nl": "gesprek voeren", "en": "have a conversation"}, {"nl": "organisaties (organisatie)", "en": "organizations"}, {"nl": "paspoort (het)", "en": "passport"}, {"nl": "visum (het)", "en": "visa"}, {"nl": "wilde (willen)", "en": "wanted"}, {"nl": "EU-land (het)", "en": "EU country"}, {"nl": "verblijfsvergunning (de)", "en": "residence permit"}, {"nl": "kreeg (krijgen)", "en": "received"}, {"nl": "IND (de)", "en": "IND"}, {"nl": "immigratiedienst (de)", "en": "immigration service"}, {"nl": "inburgering (de)", "en": "civic integration"}, {"nl": "inburgeringstoets (de)", "en": "civic integration test"}, {"nl": "zeiden (zeggen)", "en": "said"}, {"nl": "nadat", "en": "after"}, {"nl": "liet (laten)", "en": "had"}, {"nl": "zich", "en": "himself"}, {"nl": "gemeente (de)", "en": "municipality"}, {"nl": "zich registreren", "en": "register"}, {"nl": "tegelijk", "en": "at the same time"}, {"nl": "burger (de)", "en": "civilian"}, {"nl": "belasting (de)", "en": "tax"}, {"nl": "gegevens (de)", "en": "data"}, {"nl": "eveneens", "en": "also"}, {"nl": "belastingdienst (de)", "en": "tax office"}, {"nl": "hoorde (horen)", "en": "heard"}, {"nl": "buitenlandse (buitenlands)", "en": "foreign"}, {"nl": "rijbewijs (het)", "en": "driving licence"}, {"nl": "mocht (mogen)", "en": "was allowed"}, {"nl": "voorlopig", "en": "for the time being"}, {"nl": "gehaald (halen)", "en": "got (passed)"}, {"nl": "geval (het)", "en": "case"}, {"nl": "aanvragen", "en": "apply for"}, {"nl": "bleek (blijken)", "en": "turned out to be"}, {"nl": "afhankelijk van", "en": "depending on"}, {"nl": "vergunning (de)", "en": "permit"}, {"nl": "geregeld (regelen)", "en": "arranged"}, {"nl": "UWV (de)", "en": "UWV"}, {"nl": "terecht kunnen", "en": "can go"}, {"nl": "verzekering (de)", "en": "insurance"}, {"nl": "tegen", "en": "for"}, {"nl": "ziektekosten (de)", "en": "medical expenses"}, {"nl": "afsluiten", "en": "take out"}, {"nl": "anders", "en": "otherwise"}, {"nl": "diploma's (het diploma)", "en": "diplomas"}, {"nl": "vergelijken", "en": "compare"}]}, "34": {"title": "Van republiek naar koninkrijk", "words": [{"nl": "republiek (de)", "en": "republic"}, {"nl": "koninkrijk (het)", "en": "kingdom"}, {"nl": "ontstaan", "en": "originated"}, {"nl": "aparte (apart)", "en": "separate"}, {"nl": "zetten", "en": "put"}, {"nl": "feiten (het feit)", "en": "facts"}, {"nl": "op een rij", "en": "in a row"}, {"nl": "richten", "en": "direct"}, {"nl": "aandacht (de)", "en": "attention"}, {"nl": "staten (de staat)", "en": "states"}, {"nl": "rijk (het)", "en": "empire"}, {"nl": "leiding (de)", "en": "leadership"}, {"nl": "onder leiding van", "en": "under the leadership of"}, {"nl": "Willem", "en": "William"}, {"nl": "Oranje", "en": "Orange"}, {"nl": "voerden oorlog (oorlog voeren)", "en": "waged war"}, {"nl": "uiteindelijk", "en": "in the end"}, {"nl": "wonnen (winnen)", "en": "won"}, {"nl": "kwam tot stand (tot stand komen)", "en": "came into being"}, {"nl": "der", "en": "of the"}, {"nl": "verenigde (verenigd)", "en": "united"}, {"nl": "Nederlanden", "en": "Netherlands"}, {"nl": "periode (de)", "en": "period"}, {"nl": "verre (ver)", "en": "far away"}, {"nl": "namen in bezit (in bezit nemen)", "en": "took possession"}, {"nl": "bezit (het)", "en": "possession"}, {"nl": "korte (kort)", "en": "short"}, {"nl": "namen (de naam)", "en": "names"}, {"nl": "herinneren", "en": "remind"}, {"nl": "daaraan", "en": "of that"}, {"nl": "Indonesië", "en": "Indonesia"}, {"nl": "Suriname", "en": "Suriname"}, {"nl": "gemeentes (de gemeente)", "en": "municipalities"}, {"nl": "horen bij", "en": "belong to"}, {"nl": "werd", "en": "became"}, {"nl": "hieraan", "en": "to this"}, {"nl": "lid (het)", "en": "member"}, {"nl": "vlag (de)", "en": "flag"}, {"nl": "in gebruik", "en": "in use"}, {"nl": "wit", "en": "white"}, {"nl": "blauw", "en": "blue"}, {"nl": "ontwikkeld (ontwikkelen)", "en": "developed"}, {"nl": "in tegenstelling tot", "en": "in contrast to"}, {"nl": "ontwikkeling (de)", "en": "development"}, {"nl": "meegemaakt (meemaken)", "en": "experienced"}, {"nl": "Duitse (Duits)", "en": "German"}, {"nl": "leidde (leiden)", "en": "led"}, {"nl": "waarbij", "en": "during which"}, {"nl": "tientallen", "en": "dozens"}, {"nl": "miljoenen", "en": "millions"}, {"nl": "stierven (sterven)", "en": "died"}, {"nl": "verloor (verliezen)", "en": "lost"}, {"nl": "waardoor", "en": "as a result of which"}, {"nl": "volk (het)", "en": "people"}, {"nl": "hoort bij (horen bij)", "en": "belongs to"}, {"nl": "op het gebied van", "en": "on the terrain of"}, {"nl": "waarheid (de)", "en": "truth"}]}, "35": {"title": "Gelukkige kinderen", "words": [{"nl": "gelukkige (gelukkig)", "en": "happy"}, {"nl": "behoren", "en": "belong"}, {"nl": "gelukkigste", "en": "happiest"}, {"nl": "in totaal", "en": "in total"}, {"nl": "betrokken (bij)", "en": "involved"}, {"nl": "jongens (de jongen)", "en": "boys"}, {"nl": "blijken", "en": "turn out to be"}, {"nl": "gelukkiger", "en": "happier"}, {"nl": "meisjes (het meisje)", "en": "girls"}, {"nl": "las (lezen)", "en": "read"}, {"nl": "bericht (het)", "en": "story"}, {"nl": "gisteravond", "en": "yesterday evening"}, {"nl": "gelezen (lezen)", "en": "read"}, {"nl": "nieuws (het)", "en": "news"}, {"nl": "blije (blij)", "en": "happy"}, {"nl": "speciale (speciaal)", "en": "special"}, {"nl": "organisatie (de)", "en": "organization"}, {"nl": "controleert (controleren)", "en": "checks"}, {"nl": "huizen (huis)", "en": "houses"}, {"nl": "omgeving (de)", "en": "surroundings"}, {"nl": "vriendjes (het vriendje)", "en": "little friends"}, {"nl": "vriendinnetjes (het vriendinnetje)", "en": "little friends (girls)"}, {"nl": "veilige (veilig)", "en": "safe"}, {"nl": "situatie (de)", "en": "situation"}, {"nl": "opvoeding (de)", "en": "upbringing"}, {"nl": "punt (het)", "en": "point"}, {"nl": "houdt rekening met (rekening houden met)", "en": "take into account"}, {"nl": "meningen (de mening)", "en": "opinions"}, {"nl": "gevoelens", "en": "feelings"}, {"nl": "geldt (gelden)", "en": "applies"}, {"nl": "betreft (betreffen)", "en": "concerns"}, {"nl": "voorbeeld (het)", "en": "example"}, {"nl": "leeft (leven)", "en": "lives"}, {"nl": "arm", "en": "poor"}, {"nl": "meedoen", "en": "participate"}, {"nl": "kansen (de kans)", "en": "chances"}, {"nl": "overigens", "en": "by the way"}, {"nl": "saaie (saai)", "en": "boring"}, {"nl": "momenten (het moment)", "en": "moments"}, {"nl": "verveelt (zich vervelen)", "en": "is bored"}, {"nl": "denkt (denken)", "en": "thinks"}, {"nl": "wou (willen)", "en": "wish"}, {"nl": "hondjes (het hondje)", "en": "little dogs"}]}, "36": {"title": "De twaalf provincies", "words": [{"nl": "provincies (de provincie)", "en": "provinces"}, {"nl": "muur (de)", "en": "wall"}, {"nl": "verdeeld in (verdelen in)", "en": "divided into"}, {"nl": "karakter (het)", "en": "character"}, {"nl": "eerdere (eerder)", "en": "previous"}, {"nl": "gas (het)", "en": "gas"}, {"nl": "dat", "en": "that"}, {"nl": "grond (de)", "en": "ground"}, {"nl": "ontdekt (ontdekken)", "en": "discovered"}, {"nl": "veroorzaakt (veroorzaken)", "en": "causes"}, {"nl": "daalt (dalen)", "en": "sinks"}, {"nl": "levert (leveren)", "en": "supplies"}, {"nl": "melkproducten (het melkproduct)", "en": "milk products"}, {"nl": "Friese (Fries)", "en": "Frisian"}, {"nl": "meren (het meer)", "en": "lakes"}, {"nl": "ideale (ideaal)", "en": "ideal"}, {"nl": "besteden", "en": "spend"}, {"nl": "geldt (gelden)", "en": "is true"}, {"nl": "voor", "en": "for"}, {"nl": "Noordzee", "en": "North Sea"}, {"nl": "bestaat (bestaan)", "en": "exists"}, {"nl": "stuk (het)", "en": "piece (area)"}, {"nl": "provincie (de)", "en": "province"}, {"nl": "lege (leeg)", "en": "empty"}, {"nl": "een stuk", "en": "much"}, {"nl": "hoofdstad (de)", "en": "capital"}, {"nl": "vergaderstad (de)", "en": "'meeting city'"}, {"nl": "vergaderen", "en": "have a meeting"}, {"nl": "even", "en": "just as"}, {"nl": "oosten (het)", "en": "east"}, {"nl": "houdt van (houden van)", "en": "like"}, {"nl": "wandelen", "en": "hiking"}, {"nl": "fietsen", "en": "cycling"}, {"nl": "noemen", "en": "call"}, {"nl": "rond", "en": "around"}, {"nl": "bekende (bekend)", "en": "well-known"}, {"nl": "slimme (slim)", "en": "smart"}, {"nl": "oplossingen (de oplossing)", "en": "solutions"}, {"nl": "technische (technisch)", "en": "technical"}, {"nl": "maatschappelijke (maatschappelijk)", "en": "social"}, {"nl": "geproduceerd (produceren)", "en": "produced"}, {"nl": "spreekt … uit (uitspreken)", "en": "pronounces"}, {"nl": "landje (het)", "en": "little country"}]}, "37": {"title": "De gemeente", "words": [{"nl": "verloopt (verlopen)", "en": "expires"}, {"nl": "nieuw", "en": "new"}, {"nl": "meegenomen (meenemen)", "en": "brought along"}, {"nl": "pasfoto (de)", "en": "passport photograph"}, {"nl": "aha", "en": "aha"}, {"nl": "in orde", "en": "in"}, {"nl": "werkdagen (de werkdag)", "en": "business days"}, {"nl": "terugkomen", "en": "come back"}, {"nl": "loket (het)", "en": "counter"}, {"nl": "afdeling (de)", "en": "department"}, {"nl": "burgerzaken", "en": "civil affairs"}, {"nl": "bedoelen", "en": "mean"}, {"nl": "dorp (het)", "en": "village"}, {"nl": "combinatie (de)", "en": "combination"}, {"nl": "stadsdelen (het stadsdeel)", "en": "districts"}, {"nl": "kantoren (het kantoor)", "en": "offices"}, {"nl": "geregistreerd (registeren)", "en": "registered"}, {"nl": "ernaartoe", "en": "to it"}, {"nl": "geboorte (de)", "en": "birth"}, {"nl": "regelt (regelen)", "en": "arranges"}, {"nl": "langdurig", "en": "long-term"}, {"nl": "bouwt (bouwen)", "en": "builds"}, {"nl": "verzamelt (verzamelen)", "en": "collects"}, {"nl": "afval (het)", "en": "waste"}, {"nl": "enzovoort", "en": "and so on"}, {"nl": "hond (de)", "en": "dog"}, {"nl": "burgers (de burger)", "en": "citizens"}, {"nl": "leden (het lid)", "en": "members"}, {"nl": "gemeenteraad (de)", "en": "municipal council"}, {"nl": "parlement (het)", "en": "parliament"}, {"nl": "bestuur (het)", "en": "management"}, {"nl": "verkiezingen", "en": "elections"}, {"nl": "stuurt (sturen)", "en": "sends"}, {"nl": "erop", "en": "on it"}, {"nl": "daarmee", "en": "with that"}, {"nl": "stemmen", "en": "vote"}, {"nl": "burgemeester (de)", "en": "mayor"}, {"nl": "functie (de)", "en": "function"}, {"nl": "lijkt op (lijken op)", "en": "resembles"}, {"nl": "voorzitter (de)", "en": "chairman"}, {"nl": "leidt (leiden)", "en": "leads"}, {"nl": "vergaderingen (de vergadering)", "en": "meetings"}, {"nl": "beslist (beslissen)", "en": "decides"}, {"nl": "boos", "en": "angry"}, {"nl": "twintig", "en": "twenty"}, {"nl": "verhuizing (de)", "en": "move"}, {"nl": "verhuist (verhuizen)", "en": "move"}, {"nl": "huurwoning (de)", "en": "rental property"}, {"nl": "verhuizen", "en": "move"}, {"nl": "even kijken", "en": "let me think"}, {"nl": "wilt (willen)", "en": "want"}]}, "38": {"title": "Een beter klimaat begint bij jezelf", "words": [{"nl": "welkom", "en": "welcome"}, {"nl": "presentatie (de)", "en": "presentation"}, {"nl": "planten (de plant)", "en": "plants"}, {"nl": "sterven", "en": "die"}, {"nl": "niveau (het)", "en": "level"}, {"nl": "onderzoeken (het onderzoek)", "en": "studies"}, {"nl": "leveren", "en": "produce"}, {"nl": "bewijs (het)", "en": "evidence"}, {"nl": "alsof", "en": "as if"}, {"nl": "niks", "en": "nothing"}, {"nl": "realiseren", "en": "realize"}, {"nl": "gevaarlijke (gevaarlijk)", "en": "dangerous"}, {"nl": "toestand (de)", "en": "situation"}, {"nl": "ontstaat (ontstaan)", "en": "arises"}, {"nl": "wijze (de)", "en": "manner"}, {"nl": "doorgaan", "en": "continue"}, {"nl": "zullen", "en": "will"}, {"nl": "rampen (de ramp)", "en": "disasters"}, {"nl": "plaatsvinden", "en": "take place"}, {"nl": "verwachting (de)", "en": "expectation"}, {"nl": "natuurlijke (natuurlijk)", "en": "natural"}, {"nl": "duurzame (duurzaam)", "en": "sustainable"}, {"nl": "nadenken", "en": "think"}, {"nl": "bouwen", "en": "build"}, {"nl": "materialen (het materiaal)", "en": "materials"}, {"nl": "Europese (Europees)", "en": "European"}, {"nl": "lijst (de)", "en": "list"}, {"nl": "beleid (het)", "en": "policy"}, {"nl": "aanpassen", "en": "adapt"}, {"nl": "blijkbaar", "en": "apparently"}, {"nl": "verantwoordelijk", "en": "responsible"}, {"nl": "besluiten", "en": "decide"}, {"nl": "gedrag (het)", "en": "behaviour"}, {"nl": "veranderen", "en": "change"}, {"nl": "flinke (flink)", "en": "considerable"}, {"nl": "adviezen (het advies)", "en": "tips"}, {"nl": "effect (het)", "en": "effect"}, {"nl": "in plaats van", "en": "instead of"}, {"nl": "kilo", "en": "kilo"}, {"nl": "flink wat", "en": "quite"}, {"nl": "reis (reizen)", "en": "travel"}, {"nl": "bewust", "en": "consciously"}, {"nl": "draag (dragen)", "en": "wear"}, {"nl": "schoenen (de)", "en": "shoes"}, {"nl": "plastic", "en": "plastic"}, {"nl": "idee (het)", "en": "idea"}, {"nl": "toch", "en": "isn't it"}, {"nl": "manieren (de manier)", "en": "ways"}, {"nl": "verbeteren", "en": "improve"}, {"nl": "bereid", "en": "prepared"}, {"nl": "betere (beter)", "en": "better"}]}, "39": {"title": "Politiek", "words": [{"nl": "politiek (de)", "en": "politics"}, {"nl": "kiezers (de kiezer)", "en": "voters"}, {"nl": "stemmen op", "en": "vote for"}, {"nl": "persoon (de)", "en": "person"}, {"nl": "partij (de)", "en": "party"}, {"nl": "politieke (politiek)", "en": "political"}, {"nl": "partijen (de partij)", "en": "parties"}, {"nl": "linkse (links)", "en": "left"}, {"nl": "rechtse (rechts)", "en": "right"}, {"nl": "christelijke (christelijk)", "en": "Christian"}, {"nl": "gevormd (vormen)", "en": "formed"}, {"nl": "meerderheid (de)", "en": "majority"}, {"nl": "samenwerken", "en": "collaborate"}, {"nl": "zijn het eens over (het eens zijn over)", "en": "agree on"}, {"nl": "bespreken", "en": "discuss"}, {"nl": "minister-president (de)", "en": "prime minister"}, {"nl": "ministers (de minister)", "en": "ministers"}, {"nl": "centrale (centraal)", "en": "central"}, {"nl": "gezondheid (de)", "en": "health"}, {"nl": "voert (voeren)", "en": "holds"}, {"nl": "stevige (stevig)", "en": "intense"}, {"nl": "debatten (het debat)", "en": "debates"}, {"nl": "nacht (de)", "en": "night"}, {"nl": "felle (fel)", "en": "fierce"}, {"nl": "kritiek (de)", "en": "criticism"}, {"nl": "reageren", "en": "react"}, {"nl": "minister (de)", "en": "minister"}, {"nl": "reactie (de)", "en": "reaction"}, {"nl": "overtuigen", "en": "convince"}, {"nl": "wensen", "en": "wish"}, {"nl": "veranderingen (de verandering)", "en": "changes"}, {"nl": "wens (de)", "en": "wish"}, {"nl": "weigeren", "en": "refuse"}, {"nl": "vertrouwen (het)", "en": "trust"}, {"nl": "verplicht (verplichten)", "en": "forces"}, {"nl": "of", "en": "or"}, {"nl": "macht (de)", "en": "power"}, {"nl": "taak (de)", "en": "task"}, {"nl": "controleren", "en": "check"}, {"nl": "wetten (de wet)", "en": "laws"}, {"nl": "aangenomen (aannemen)", "en": "adopted"}, {"nl": "politici (de politicus)", "en": "politicians"}, {"nl": "staatshoofd (het staatshoofd)", "en": "head of state"}, {"nl": "symbolische (symbolisch)", "en": "symbolic"}, {"nl": "ontvangt (ontvangen)", "en": "receives"}, {"nl": "vertegenwoordiger (de)", "en": "representative"}, {"nl": "verbindende (verbinden)", "en": "connecting"}, {"nl": "georganiseerd (organiseren)", "en": "organized"}, {"nl": "dergelijk", "en": "such"}]}, "40": {"title": "De tijden zijn veranderd", "words": [{"nl": "tijden (de tijd)", "en": "times"}, {"nl": "veranderd (veranderen)", "en": "changed"}, {"nl": "voorstellen", "en": "imagine"}, {"nl": "generatie (de)", "en": "generation"}, {"nl": "leefde (leven)", "en": "lived"}, {"nl": "natuurlijk", "en": "of course"}, {"nl": "mobiele (mobiel)", "en": "mobile"}, {"nl": "telefoons (de telefoon)", "en": "telephones"}, {"nl": "pinpas (de)", "en": "debit card"}, {"nl": "euro's (de euro)", "en": "euros"}, {"nl": "supermarkten (de supermarkt)", "en": "supermarkets"}, {"nl": "keuze aan", "en": "of"}, {"nl": "aardappel (de)", "en": "potato"}, {"nl": "oorspronkelijk", "en": "originally"}, {"nl": "destijds", "en": "in those days"}, {"nl": "grenzen (de grens)", "en": "borders"}, {"nl": "gesloten (sluiten)", "en": "closed"}, {"nl": "bestond (bestaan)", "en": "existed"}, {"nl": "ander", "en": "different"}, {"nl": "op", "en": "out of"}, {"nl": "weliswaar", "en": "it's true"}, {"nl": "er", "en": "of them"}, {"nl": "speelden (spelen)", "en": "played"}, {"nl": "met de hand", "en": "by hand"}, {"nl": "moeilijker", "en": "more difficult"}, {"nl": "beperken", "en": "limit"}, {"nl": "massaal", "en": "in massive numbers"}, {"nl": "wapens (het wapen)", "en": "weapons"}, {"nl": "geweld (het)", "en": "violence"}, {"nl": "positie (de)", "en": "position"}, {"nl": "eisen (de eis)", "en": "demand"}, {"nl": "zeventig", "en": "seventy"}, {"nl": "zwanger", "en": "pregnant"}, {"nl": "werden (worden)", "en": "became"}, {"nl": "sindsdien", "en": "since then"}, {"nl": "vrouw (de)", "en": "woman"}, {"nl": "wet (de)", "en": "law"}, {"nl": "twintigste", "en": "twentieth"}, {"nl": "vond … plaats (plaatsvinden)", "en": "took place"}, {"nl": "verandering (de)", "en": "change"}, {"nl": "enorme (enorm)", "en": "enormous"}, {"nl": "opzichten (het opzicht)", "en": "respects"}, {"nl": "dergelijke (dergelijk)", "en": "such"}, {"nl": "hele (heel)", "en": "entire"}, {"nl": "erdoor", "en": "by it"}]}, "41": {"title": "Mijn leven in Nederland", "words": [{"nl": "hoe gaat het met", "en": "how are"}, {"nl": "voel (zich voelen)", "en": "feel"}, {"nl": "aanvankelijk", "en": "at first"}, {"nl": "verbaasde (verbazen)", "en": "was surprised"}, {"nl": "lage (laag)", "en": "low"}, {"nl": "valt … op (opvallen)", "en": "notice"}, {"nl": "herinner … me (zich herinneren)", "en": "remember"}, {"nl": "tas (de)", "en": "bag"}, {"nl": "pakken", "en": "grab"}, {"nl": "toegeven", "en": "admit"}, {"nl": "gek", "en": "strange"}, {"nl": "afspraken (de afspraak)", "en": "appointments"}, {"nl": "onrustig", "en": "restless"}, {"nl": "uurtje (het uurtje)", "en": "hour"}, {"nl": "leert (leren)", "en": "is learning"}, {"nl": "kort", "en": "recently"}, {"nl": "zwemmen", "en": "swimming"}, {"nl": "diep", "en": "deep"}, {"nl": "nog", "en": "yet"}, {"nl": "kracht (de)", "en": "power"}, {"nl": "waar … mee", "en": "with what"}, {"nl": "haar mening geven", "en": "give"}, {"nl": "er … om", "en": "for it"}, {"nl": "aan de andere kant", "en": "on the other hand"}, {"nl": "kant (de)", "en": "side"}, {"nl": "eerlijk", "en": "honest"}, {"nl": "klagen", "en": "complain"}, {"nl": "over het algemeen", "en": "in general"}, {"nl": "groeten (de groet)", "en": "regards"}]}, "42": {"title": "De laatste les", "words": [{"nl": "eindelijk", "en": "finally"}, {"nl": "voorbij", "en": "over"}, {"nl": "alleen", "en": "only"}, {"nl": "begon (beginnen)", "en": "started"}, {"nl": "na … zeggen (nazeggen)", "en": "repeat"}, {"nl": "combinaties (de combinatie)", "en": "combinations"}, {"nl": "middel (het)", "en": "tool"}, {"nl": "cursisten (de cursist)", "en": "students"}, {"nl": "hadden daar moeite mee (er moeite mee hebben)", "en": "had difficulty with that"}, {"nl": "vonden (vinden)", "en": "found"}, {"nl": "opdrachten (de opdracht)", "en": "assignments"}, {"nl": "uitvoeren", "en": "do"}, {"nl": "oefenen", "en": "practise"}, {"nl": "een kwestie van", "en": "a matter of"}, {"nl": "eraan", "en": "on it"}, {"nl": "overdag", "en": "during the daytime"}, {"nl": "bureau (het)", "en": "desk"}, {"nl": "ga … mee (meegaan)", "en": "come along"}, {"nl": "maatschappij (de)", "en": "society"}, {"nl": "twijfelt (twijfelen)", "en": "has doubts"}, {"nl": "beslissing (de)", "en": "decision"}, {"nl": "genomen (nemen)", "en": "taken"}, {"nl": "concreet", "en": "concrete"}, {"nl": "twijfel (twijfelen)", "en": "have doubts"}, {"nl": "zoek (zoeken)", "en": "look for"}, {"nl": "verwacht (verwachten)", "en": "expect"}, {"nl": "opzetten", "en": "set up"}, {"nl": "gaan door (doorgaan)", "en": "continue"}, {"nl": "slagen", "en": "pass"}, {"nl": "positief", "en": "positive"}, {"nl": "zodat", "en": "so that"}]}};
+
+const state = {
+  lesson: 1,
+  index: 0,
+  flipped: false,
+  showNLFirst: true,
+  cards: [],
+};
+
+const els = {
+  grid: document.getElementById('lessonGrid'),
+  title: document.getElementById('lessonTitle'),
+  meta: document.getElementById('lessonMeta'),
+  card: document.getElementById('card'),
+  frontWord: document.getElementById('frontWord'),
+  backWord: document.getElementById('backWord'),
+  frontLang: document.getElementById('frontLang'),
+  backLang: document.getElementById('backLang'),
+  frontIdx: document.getElementById('frontIdx'),
+  backIdx: document.getElementById('backIdx'),
+  frontLesson: document.getElementById('frontLesson'),
+  backLesson: document.getElementById('backLesson'),
+  prev: document.getElementById('prevBtn'),
+  next: document.getElementById('nextBtn'),
+  currentNum: document.getElementById('currentNum'),
+  totalNum: document.getElementById('totalNum'),
+  fill: document.getElementById('progressFill'),
+  flipMode: document.getElementById('flipModeBtn'),
+  shuffle: document.getElementById('shuffleBtn'),
+  reset: document.getElementById('resetBtn'),
+};
+
+function buildGrid() {
+  els.grid.innerHTML = '';
+  Object.keys(DATA).sort((a,b) => +a - +b).forEach(num => {
+    const btn = document.createElement('button');
+    btn.className = 'lesson-btn';
+    btn.textContent = num;
+    btn.title = DATA[num].title;
+    btn.dataset.lesson = num;
+    btn.addEventListener('click', () => loadLesson(+num));
+    els.grid.appendChild(btn);
+  });
+}
+
+function loadLesson(num) {
+  resetFlipInstant();
+  state.lesson = num;
+  state.cards = DATA[num].words.map((w, i) => ({...w, originalIdx: i}));
+  state.index = 0;
+  document.querySelectorAll('.lesson-btn').forEach(b => {
+    b.classList.toggle('active', +b.dataset.lesson === num);
+  });
+  els.title.textContent = 'Les ' + num + ' · ' + DATA[num].title;
+  els.meta.textContent = state.cards.length + ' woorden';
+  render();
+}
+
+function render() {
+  const card = state.cards[state.index];
+  if (!card) return;
+
+  const nl = card.nl;
+  const en = card.en;
+
+  // Determine which side shows what based on showNLFirst
+  if (state.showNLFirst) {
+    els.frontWord.textContent = nl;
+    els.backWord.textContent = en;
+    els.frontLang.textContent = 'NEDERLANDS';
+    els.backLang.textContent = 'ENGLISH';
+  } else {
+    els.frontWord.textContent = en;
+    els.backWord.textContent = nl;
+    els.frontLang.textContent = 'ENGLISH';
+    els.backLang.textContent = 'NEDERLANDS';
+  }
+
+  const idxLabel = String(state.index + 1).padStart(2,'0') + '/' + String(state.cards.length).padStart(2,'0');
+  els.frontIdx.textContent = idxLabel;
+  els.backIdx.textContent = idxLabel;
+  els.frontLesson.textContent = 'LES ' + state.lesson;
+  els.backLesson.textContent = 'LES ' + state.lesson;
+
+  els.card.classList.toggle('flipped', state.flipped);
+
+  els.currentNum.textContent = state.index + 1;
+  els.totalNum.textContent = state.cards.length;
+  const pct = ((state.index + 1) / state.cards.length) * 100;
+  els.fill.style.width = pct + '%';
+
+  els.prev.disabled = state.index === 0;
+  els.next.disabled = state.index === state.cards.length - 1;
+}
+
+function flip() {
+  state.flipped = !state.flipped;
+  render();
+}
+
+function resetFlipInstant() {
+  // If currently flipped, snap back to front face without animating
+  // so the user never sees the next card's back during transition.
+  if (state.flipped) {
+    els.card.classList.add('no-transition');
+    state.flipped = false;
+    els.card.classList.remove('flipped');
+    // Force reflow so the no-transition style is applied before we re-enable
+    void els.card.offsetWidth;
+    els.card.classList.remove('no-transition');
+  }
+}
+
+function next() {
+  if (state.index < state.cards.length - 1) {
+    resetFlipInstant();
+    state.index++;
+    render();
+  }
+}
+
+function prev() {
+  if (state.index > 0) {
+    resetFlipInstant();
+    state.index--;
+    render();
+  }
+}
+
+function shuffle() {
+  for (let i = state.cards.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [state.cards[i], state.cards[j]] = [state.cards[j], state.cards[i]];
+  }
+  resetFlipInstant();
+  state.index = 0;
+  render();
+}
+
+function resetOrder() {
+  state.cards = DATA[state.lesson].words.map((w, i) => ({...w, originalIdx: i}));
+  resetFlipInstant();
+  state.index = 0;
+  render();
+}
+
+// Wire up
+els.card.addEventListener('click', flip);
+els.prev.addEventListener('click', prev);
+els.next.addEventListener('click', next);
+els.shuffle.addEventListener('click', shuffle);
+els.reset.addEventListener('click', resetOrder);
+els.flipMode.addEventListener('click', () => {
+  state.showNLFirst = !state.showNLFirst;
+  els.flipMode.textContent = state.showNLFirst ? 'Show NL first' : 'Show EN first';
+  els.flipMode.classList.toggle('on', !state.showNLFirst);
+  resetFlipInstant();
+  render();
+});
+
+document.addEventListener('keydown', (e) => {
+  if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); flip(); }
+  else if (e.key === 'ArrowRight') { e.preventDefault(); next(); }
+  else if (e.key === 'ArrowLeft') { e.preventDefault(); prev(); }
+});
+
+buildGrid();
+loadLesson(1);
+</script>
+</body>
+</html>
